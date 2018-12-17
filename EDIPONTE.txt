@@ -1,0 +1,248 @@
+PONTES DO DOSVOX
+
+
+SUMÁRIO
+
+1) INTRODUÇÃO: Descrição sobre o que são as pontes e qual o seu uso principal pela comunidade.
+2) INICIANDO O PONTEVOX: Descrição da utilização do pontevox e sua tela de inicialização
+3) TIPOS DE PONTES PARA USO: Explicação das pontes que estão disponiveis para a comunidade.
+No momento temos as pontes WEB, FTP e DROPBOX;
+4) INSERINDO, FOLHEANDO, REMOVENDO E EDITANDO PONTES NO PONTEVOX: Explicar com detalhes como
+trabalhar com sua ponte;
+5) INICIANDO O EDIPONTE: Descrição da utilização do ediponte e sua tela de inicialização
+6) OPÇÕES DE EXECUÇÃO DAS PONTES: Mostrar 
+
+{ ----------------------------------------------------------------------------------------- }
+
+1) INTRODUÇÂO
+A ferramenta EDIPONTE tem por objetivo dar suporte para deficientes 
+visuais se comunicarem por meio da rede de forma rápida e prática, 
+além de dá uma infraestrutura de guardar, buscar e editar arquivos 
+em nuvem da sua ponte (algo que é parecido com uma conta, porém com 
+algumas características distintas) ou pontes de outros usuários.
+
+O funcionamento do editor é similar ao MiniEditor do sistema Dosvox
+apenas com acesso às informações remotas.
+
+{ ----------------------------------------------------------------------------------------- }
+
+2) INICIAR
+
+Ao iniciar a aplicação pedirá uma ponte para ser acessada, ao qual você pode fazer de duas 
+formas:
+
+- digitando o nome da ponte sucedido por @ e depois o nome da rota que deseja seguir,
+seguem alguns exemplos úteis:
+
+[ponte]@\ -> acessar diretório principal;
+[ponte]@[nomeArquivo].[extensão] -> acessar arquivo, caso o arquivo não esteja no diretório
+principal adicione o caminho completo.
+[ponte]@[nomeDiretorio]\ -> acessar diretório, caso o diretório não esteja no diretório
+principal adicione o caminho completo.
+OBSERVAÇÃO: Caso tente acessar uma rota não existente na ponte será lançado um erro e voltará para tela
+inicial da ferramenta.
+
+- Usando as setas para cima ou para baixo, que listará às pontes que estão disponíveis para
+acesso remoto.
+
+{ ----------------------------------------------------------------------------------------- }
+
+3) ACESSANDO A PONTE
+
+. Ao selecionar a ponte e apertar ENTER será listado todos os arquivos e subdiretórios da
+ponte.
+. Quando um subdiretório e selecionado, será listado todos seus arquivos, caso queira voltar 
+para o diretório anterior aperte a tecla ESC.
+. Diretórios vazios ou inacessíveis não podem ser explorados no momento, logo, se tentar 
+acessá-los dará um erro e voltará para o início.
+. Você pode usar o ESC para voltar os “níveis dos diretórios” até chegar na janela principal.
+. Quando um arquivo é selecionado aparecerá 3 opções para interagir com o arquivo remoto: 
+
+[Editar] : Os arquivos que podem ser baixado é do tipo:
+.TXT;
+.HTM e .HTML;
+.PAS;
+.DPR;
+.PY;
+.JAVA;
+.C;
+
+Arquivos que não possuem extensão indicada acima não podem ser editadas, apenas baixadas. 
+
+[Baixar] : Será solicitado se deseja baixar no diretório atual, se sim, o mesmo será baixado 
+e a ferramenta será finalizada. Se não, abrirá seus favoritos para selecionar uma das opções 
+onde será baixado o arquivo;
+
+[Voltar] : volta para o início.
+
+{ ----------------------------------------------------------------------------------------- }
+
+4) PONTE INEXISTENTE
+
+Quando é digitado uma ponte que não existe a aplicação solicita a criação da mesma. 
+Caso queira criar a ponte será aberta uma janela com opções:
+
+[Inserir] : criação de uma ponte. Para a mesma ser gerada é solicitado o nome, conta, senha, 
+servidor, porta e tipo de ponte (WEB, FTP, P2P). Exemplo:
+
+nome: bruna
+tipo de ponte: web
+porta: 80
+servidor: intervox.nce.ufrj.br
+conta: bruna_dosvox (conta que possui no servidor)
+senha: *********
+[Remover] : insere o nome da ponte que será removida;
+[Listar] : lista as pontes disponíveis. Ao selecionar uma,  será exibida suas configurações.
+[Editar] : insere o nome da ponte que deseja editar;
+[Folhear] : apenas exibe o nome das pontes disponíveis.
+[Sair] : sai das configurações e volta para a ferramenta.
+
+{ ----------------------------------------------------------------------------------------- }
+
+5) EDITAR
+
+A teclagem é idêntica a uma máquina de escrever convencional. Cada tecla é
+ecoada pela placa de som. Ao fim de cada linha, soa um bip para mostrar o
+final da linha.  Aperte a tecla ENTER para continuar a teclar o texto.
+
+Os acentos são colocados como numa máquina de escrever. Primeiro o acento,
+depois a letra.
+
+Ao mesmo tempo que a teclagem é realizada e ouvida, aparece também na tela
+do computador o texto, para que um eventual observador que não seja
+deficiente visual possa também acompanhar o trabalho.
+
+Um texto teclado é composto de uma série de letras, obviamente. A grande
+vantagem de um editor de textos é podermos alterar livremente cada uma destas
+letras, inserir novas letras, criar linhas novas, apagar linhas, etc.
+
+A posição da letra no texto onde vamos fazer qualquer alteração é chamada
+de cursor. O cursor, à medida que vamos teclando, vai andando para a direita,
+com a digitação.
+
+O Mini-editor possui algumas teclas especiais para facilitar a elaboração do
+texto.  Basta pressionar a tecla F9 para ajuda.
+
+As opções são as seguintes:
+ENTER -  insere linha
+F1        -  fala palavra
+F2        -  grava
+F3        -  informa linha atual
+F4        -  controle da soletragem
+F5        -  busca trecho
+F6        -  ordena arquivo
+F7        -  remove linha atual
+F8        -  informa hora
+F9        -  ajuda
+ESC       -  termina
+
+{ ----------------------------------------------------------------------------------------- }
+
+6) MOVER O CURSOR
+
+SETA ESQUERDA - move o cursor um caracter para a esquerda.  Ao chegar
+no primeiro caracter da linha, dá um bip.  O caracter sobre o qual o cursor
+passou é falado.
+
+SETA DIREITA - move o cursor um caracter para a direita.   Ao chegar
+no último caracter da linha, soa um bip.   O caracter sobre o qual o cursor
+passou é falado.
+
+SETA ACIMA - move o cursor uma linha para cima.   Ao chegar na primeira
+linha, soa um bip.
+
+SETA ABAIXO - move o cursor uma linha para baixo.   Ao chegar na última
+linha do texto, soa um bip.
+
+HOME - posiciona na coluna 1 da linha.
+
+END - posiciona após a última coluna escrita da linha.
+
+ENTER - move o cursor uma linha para baixo. Se já estava na última linha
+insere uma nova linha após esta.
+
+PAGE UP - volta 20 linhas de texto.
+
+PAGE DOWN - avança 20 linhas de texto.
+
+CONTROL PAGE UP - posiciona o cursor na primeira linha do texto.
+
+CONTROL PAGE DOWN - posiciona o cursor na última linha do texto.
+
+CONTROL SETA ESQUERDA - retorna uma palavra na linha.
+
+CONTROL SETA DIREITA - avança uma palavra na linha.
+
+CONTROL  C - informa a coluna atual do cursor.
+
+{ ----------------------------------------------------------------------------------------- }
+
+7) REMOVER CARACTERES
+
+BACKSPACE  - remove o caracter anterior ao cursor.
+
+DEL - remove o caracter na posição do cursor.
+
+CONTROL  D - apaga desde a posição do cursor até o fim da linha.
+
+CONTROL  Y - remove a linha toda do texto.
+
+{ ----------------------------------------------------------------------------------------- }
+
+8) LER
+
+F1 - cada palavra da linha é falada. Após a última palavra da linha soará um
+bip.
+
+CONTROL  F1 - o editor fala a linha inteira do texto, a partir do ponto
+que o cursor está. Caso  queira interromper a fala pressione qualquer tecla.
+
+F4  - aciona ou desaciona fala durante a digitação. Este comando pode
+agilizar muito a digitação, pois a fala consome muito tempo. As falas dos
+comandos continuam ativas.
+
+{ ----------------------------------------------------------------------------------------- }
+
+9) INSERIR LINHAS
+
+ENTER - o cursor passa para a próxima linha.  Se for a última linha, uma nova
+é automaticamente criada abaixo desta.
+
+CONTROL ENTER - é usado para inserirmos nova linha no meio do texto; a linha
+atual é puxada para baixo abrindo espaço para uma nova linha.
+
+{ ----------------------------------------------------------------------------------------- }
+
+10)  PROCURAR PALAVRAS NO TEXTO
+
+F5 - procura uma palavra no texto,  se encontrar, o Minied lê a linha onde
+está a palavra.
+
+CONTROL  F5 - procura a mesma palavra do último F5 novamente. Se achar, do
+Minied lê a linha onde está a palavra.
+
+Obs.: Para procurar a palavra no texto todo é necessário posicionar o cursor
+no início do texto. Caso contrário a procura é realizada a partir do
+posicionamento do cursor.
+
+{ ----------------------------------------------------------------------------------------- }
+
+11) ORDENAR
+
+F6 - ordena as linhas do texto.  Este comando é útil quando se deseja obter
+uma lista de elementos em ordem alfabética.
+Como a operação de ordenação é destrutiva, antes de ser iniciada, é pedida a
+confirmação do comando.  Tecle S para confirmar.
+
+{ ----------------------------------------------------------------------------------------- }
+
+12) ARQUIVAMENTO E SAÍDA DO EDIPONTE
+
+F2 - Grava o arquivo e continua teclando deste mesmo ponto.
+CONTROL  F2 - Semelhante ao F2 porém permite informar um novo nome para o
+arquivo.
+
+Para sair do EDIPONTE deve-se pressionar ESC.
+É pedida a confirmação da saída; tecle S;
+é perguntado que o arquivo não pode ser gravado remotamente e se deseja baixa-lo.
+Caso sim, o arquivo será baixado para o diretório atual.
