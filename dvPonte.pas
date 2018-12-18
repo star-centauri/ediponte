@@ -33,7 +33,7 @@ procedure inicPonte;
 procedure closePonte;
 function salvaDadosPonte(nomePonte: string): boolean;
 function opcoesArqProtocolos(out listaOpcoes: TStringList; var tabLetrasOpcao: string): Boolean;
-function executaOpcaoProtocol(opcao: string; var prosseguir: boolean; nomeArq: string; tipoDado: string): Boolean;
+function executaOpcaoProtocol(opcao: string; var prosseguir: boolean; nomeArq: string; tipoDado: DataType): Boolean;
 
 { SubRotinas relacionada com processos de arquivo/diretório nativos do Delphi }
 function _findFirst(FileMask: string; Attributes: Integer; var SearchResult: TSearchRec): integer;
@@ -468,7 +468,7 @@ begin
 
 end;
 
-function executaOpcaoProtocol(opcao: string; var prosseguir: boolean; nomeArq: string; tipoDado: string): Boolean;
+function executaOpcaoProtocol(opcao: string; var prosseguir: boolean; nomeArq: string; tipoDado: DataType): Boolean;
 begin
     Result :=  false;
 
@@ -553,10 +553,10 @@ begin
         begin
             protocolo := ponteConectada.Tipo;
 
-            if UpCase(protocolo) = 'WEB' then
+            if AnsiUpperCase(protocolo) = 'WEB' then
                 inicializaHTTP(ponteConectada, nomePonte)
             else
-            if UpCase(protocolo) = 'FTP' then
+            if AnsiUpperCase(protocolo) = 'FTP' then
                 inicializaFTP(ponteConectada, nomePonte)
             else
                 Result := inicializaScriptVox(ponteConectada, nomePonte);

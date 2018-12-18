@@ -24,7 +24,7 @@ procedure inicializaFTP(ponte: TPonte; nomePonte: string);
 procedure fechaFTP;
 function createRotaFTP(caminho: string): Boolean;
 function listarArqFTP(out listar: TStringList): Boolean;
-function executaOpcaoFTP(opcao: string; out prosseguir: boolean; nomeArq: string; tipoDado: string): Boolean;
+function executaOpcaoFTP(opcao: string; out prosseguir: boolean; nomeArq: string; tipoDado: DataType): Boolean;
 
 { funções e procedures para manipulação de arquivos }
 procedure opcoesArqFTP(out listaOpcoes: TStringList; var tabLetrasOpcao: string);
@@ -62,7 +62,8 @@ var
     p: integer;
 begin
     Result := false;
-    if ponteConectadaFTP.Porta <> 21 or ponteConectadaFTP.Porta <> 22 then
+    if (ponteConectadaFTP.Porta <> 21) and
+       (ponteConectadaFTP.Porta <> 22) then
         begin
             sintWrite('Porta FTP inválida, só é aceita porta 21 ou 22.');
             exit;
@@ -182,14 +183,44 @@ end;
 {----------------------------------------------------------------------}
 
 function executarAcesso (ponte: TPonte): boolean;
+var
+    app: String;
+    Security : TSecurityAttributes;
+    start : TStartUpInfo;
 begin
     Result := false;
 
     if ponte.Porta = 21 then
-        Result := executarFTP(ponte)
+        app := executarFTP(ponte)
     else
     if ponte.Porta = 22 then
-        Result := executarSFTP(ponte);
+        app := executarSFTP(ponte)
+    else
+        exit;
+
+    With Security do
+        begin
+            nLength := SizeOf(TSecurityAttributes) ;
+            bInheritHandle := true;
+            lpSecurityDescriptor := NIL;
+        end;
+
+    CreatePipe(InputPipeRead, InputPipeWrite, @Security, 0);
+    CreatePipe(OutputPipeRead, OutputPipeWrite, @Security, 0);
+    CreatePipe(ErrorPipeRead, ErrorPipeWrite, @Security, 0);
+
+    FillChar(Start,Sizeof(Start),#0) ;
+    start.cb := SizeOf(start) ;
+    start.hStdInput := InputPipeRead;
+    start.hStdOutput := OutputPipeWrite;
+    start.hStdError :=  ErrorPipeWrite;
+    start.dwFlags := STARTF_USESTDHANDLES + STARTF_USESHOWWINDOW;
+    start.wShowWindow := SW_HIDE;
+
+    Result := CreateProcess(nil, PChar(app),
+        @Security, @Security,
+        true,
+        CREATE_NEW_CONSOLE or SYNCHRONIZE, nil, nil, start, ProcessInfo);
 end;
 
 {----------------------------------------------------------------------}
@@ -199,7 +230,7 @@ end;
 procedure progStop;
 begin
     WritePipeOut(InputPipeWrite, 'quit' + #$0a);
-    
+
     // close pipe handles
     CloseHandle(InputPipeRead);
     CloseHandle(InputPipeWrite);
@@ -250,11 +281,71 @@ begin
             exit;
         end;
 
+    response := getPipedData;
+    if pos('Store key in cache?', response) <> 0 then
+        begin
+            WritePipeOut(InputPipeWrite, 'y' + #$0a);
+            response := getPipedData;
+        end;
+
     if ponte.Porta = 21 then
-        Result := executarLoginFTP(ponte)
+        begin
+            if pos('Usu', response) <> 0 then
+                begin
+                    WritePipeOut(InputPipeWrite, ponte.Conta + #$0a);
+                    response := getPipedData;
+
+                    if pos('Senha', response) <> 0 then
+                        begin
+                            senha := aplicaSenha(ponte.Senha);
+                            response := WritePipeOut(InputPipeWrite, senha + #$0a);
+
+                            if response <> '' then
+                                begin
+                                    response := WritePipeOut(InputPipeWrite, 'cd ' + rotaAtual + #$0a);
+                                    Result := true;
+                                end;
+
+                            //response := ReadPipeInput(ErrorPipeRead);
+                            //response := getPipedData;
+                        end;
+                end
+            else
+                begin
+                    ERRO := ERRO_CONEXAO;
+                    progStop;
+                end;
+        end
     else
     if ponte.Porta = 22 then
-        Result := executarLoginSFTP(ponte);
+        begin
+            if pos('password', response) <> 0 then
+                begin
+                    senha := aplicaSenha(ponte.Senha);
+                    WritePipeOut(InputPipeWrite, senha + #$0a);
+
+                    response := ReadPipeInput(ErrorPipeRead);
+                    if pos('Fatal', response) <> 0 then
+                        begin
+                            sintWrite('Acesso a conta bloqueado.');
+                            exit;
+                        end;
+
+                    response := getPipedData;
+                    if pos('denied', response) <> 0 then
+                        ERRO := ERRO_CONTA
+                    else
+                        begin
+                            WritePipeOut(InputPipeWrite, 'cd ' + rotaAtual + #$0a);
+                            Result := true;
+                        end;
+                end
+            else
+                begin
+                    ERRO := ERRO_CONEXAO;
+                    progStop;
+                end;
+        end;
 end;
 
 {----------------------------------------------------------------------}
@@ -268,10 +359,19 @@ var
 begin
     Result := false;
 
+    if (ponteConectadaFTP.Porta <> 21) and
+       (ponteConectadaFTP.Porta <> 22) then
+        exit;
+
     recurso := 'cd ' + rotaAtual;
     WritePipeOut(InputPipeWrite, recurso + #$0a);
 
-    if pos('Remote directory is now', getPipedData) <> 0 then
+    if (ponteConectadaFTP.Porta = 21) and
+       (pos('250', getPipedData) <> 0) then
+        Result := true
+    else
+    if (ponteConectadaFTP.Porta = 22) and
+       (pos('Remote directory is now', getPipedData) <> 0) then
         Result := true;
 end;
 
@@ -313,7 +413,7 @@ begin
     WritePipeOut(InputPipeWrite, 'dir' + #$0a);
     response := getPipedData;
 
-    if pos('Listing directory', response) <> 0 then
+    if response <> '' then
         begin
             List := TStringList.Create;
 
@@ -756,13 +856,13 @@ begin
     listaOpcoes.Add('T - Terminar');
 end;
 
-function executaOpcaoFTP(opcao: string; out prosseguir: boolean; nomeArq: string; tipoDado: string): Boolean;
+function executaOpcaoFTP(opcao: string; out prosseguir: boolean; nomeArq: string; tipoDado: DataType): Boolean;
 begin
     Result := true;
 
-    if tipoDado = 'A' then nomeArqConectado := nomeArq;
+    if tipoDado = Arquivo then nomeArqConectado := nomeArq;
 
-    if tipoDado = 'A' then
+    if tipoDado = Arquivo then
         if opcao = 'B' then
             begin
                 editarRemotamente := false;
@@ -816,7 +916,7 @@ begin
         else
             ERRO := ERRO_OPCINV
     else
-    if tipoDado = 'D' then
+    if tipoDado = Diretorio then
         if opcao = 'E' then
             begin
                 if not enviarArq then

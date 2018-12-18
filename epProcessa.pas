@@ -27,7 +27,7 @@ implementation
 {            Menu de opções para o arquivo selecionado                 }
 {----------------------------------------------------------------------}
 
-function opcoesArq(tipoDado: string; var validarOpcao: boolean): Char;
+function opcoesArq(tipoDado: DataType; var validarOpcao: boolean): Char;
 var
     n, i: integer;
     atalho1, atalho2: char;
@@ -40,7 +40,7 @@ begin
     validarOpcao := false;
     listaOpcoes := TStringList.Create;
 
-    if tipoDado = 'A' then
+    if tipoDado = Arquivo then
         validarOpcao := opcoesArqProtocolos(listaOpcoes, tabLetrasOpcao)
     else
         validarOpcao := opcoesDirProtocolos(listaOpcoes, tabLetrasOpcao);
@@ -73,7 +73,7 @@ end;
 {           Seleciona a ação que foi pedida pelo usuário               }
 {----------------------------------------------------------------------}
 
-function executaOpcao(var opcao: char; nomeArq: string; tipoDado: Char): boolean;
+function executaOpcao(var opcao: char; nomeArq: string; tipoDado: DataType): boolean;
 var
     s: string;
     prosseguir, validaOpcao: boolean;
@@ -141,18 +141,18 @@ end;
 {              Retorna se arquivo ou diretório existe                  }
 {----------------------------------------------------------------------}
 
-function existeArqOuDir(dadoInformado: string): char;
+function existeArqOuDir(dadoInformado: string): DataType;
 begin
-    result := 'N';
+    result := Nada;
 
     if dadoInformado[length(dadoInformado)] = '\' then
         if _directoryexists(dadoInformado) then
-            result := 'D'
+            result := Diretorio
         else
             sintWriteLn('Diretório inexistente. Tente novamente')
     else
         if _fileExists(dadoInformado) then
-            result := 'A'
+            result := Arquivo
         else
             sintWriteLn('Arquivo inexistente. Tente novamente');
 end;
@@ -213,7 +213,7 @@ begin
                 begin
                     limpaBaixo(WhereY);
                     TextBackground(BLACK);
-                    executaOpcao(opcao, nomePonte, 'D')
+                    executaOpcao(opcao, nomePonte, Diretorio)
                 end
             else
                 begin
@@ -245,26 +245,28 @@ begin
 
     if atalho = ESC then
         begin
-            mensagem ('EPDESIST', 1) {Desistiu}
+            mensagem ('EPDESIST', 1); {Desistiu}
             exit;
         end;
 
     if nomePonte <> '' then
-        if ponteExiste(nomePonte) then
-            begin
-                atalhoRapido := true;
-                if salvaDadosPonte(nomePonte) then
-                    Result := true
-                else
-                    sintWriteLn('Alguns parâmetros da ponte estão vazios. Consulte o PonteVox');
-            end;
+        begin
+            if ponteExiste(nomePonte) then
+                begin
+                    atalhoRapido := true;
+                    if salvaDadosPonte(nomePonte) then
+                        Result := true
+                    else
+                        sintWriteLn('Alguns parâmetros da ponte estão vazios. Consulte o PonteVox');
+                end
+        end
     else
         begin
             folhear(item);
             
             if item <> 0 then
                 if ERRO = ERRO_PTINCORRETA then
-                    sintWriteLn('Alguns parâmetros da ponte estão vazios. Consulte o PonteVox');
+                    sintWriteLn('Alguns parâmetros da ponte estão vazios. Consulte o PonteVox')
                 else
                     begin
                         tipoDado := Diretorio;
@@ -299,7 +301,7 @@ begin
                        tipoDado := existeArqOuDir(nomePonte);
 
                    case tipoDado of
-                       'D': begin
+                       Diretorio: begin
                            repeat
                                limpaBaixo(3);
                                tituloJanela ('EDIPONTE');
@@ -314,12 +316,12 @@ begin
                                else
                                    begin
                                        dadoEscolhido := nomePonte;
-                                       executaOpcao(opcao, dadoEscolhido, 'A')
+                                       executaOpcao(opcao, dadoEscolhido, Arquivo)
                                    end;
                            until opcao = ESC;
                        end;
 
-                       'A': begin
+                       Arquivo: begin
                            dadoEscolhido := nomePonte;
                            executaOpcao(opcao, dadoEscolhido, tipoDado);
                        end;

@@ -22,7 +22,7 @@ uses
 function inicializaScriptVox(ponte: TPonte; nomePonte: string): Boolean;
 procedure fechaScriptVox;
 function createRotaScriptVox(caminho: string): Boolean;
-function executaOpcaoScripVox(opcao: string; out prosseguir: boolean; nomeArq: string; tipoDado: string): Boolean;
+function executaOpcaoScripVox(opcao: string; out prosseguir: boolean; nomeArq: string; tipoDado: DataType): Boolean;
 
 { funções e procedures para manipulação de arquivos }
 function opcoesArqScripVox(listaOpcoes: TStringList;  var tabLetrasOpcao: string): Boolean;
@@ -378,11 +378,11 @@ begin
         end
 end;
 
-function executaOpcaoScripVox(opcao: string; out prosseguir: boolean; nomeArq: string; tipoDado: string): Boolean;
+function executaOpcaoScripVox(opcao: string; out prosseguir: boolean; nomeArq: string; tipoDado: DataType): Boolean;
 begin
     Result := false;
 
-    if tipoDado = 'A' then
+    if tipoDado = Arquivo then
         if opcao = 'E' then
            begin
                if EditarArq(nomeArq) then
@@ -415,7 +415,7 @@ begin
         else
             ERRO := ERRO_OPCINV
     else
-    if tipoDado = 'D' then
+    if tipoDado = Diretorio then
         if opcao = 'N' then
             begin
                 if not criarArq then
