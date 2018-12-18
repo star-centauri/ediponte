@@ -178,66 +178,18 @@ begin
 end;
 
 {----------------------------------------------------------------------}
-{                  Executa arquivo de comando PSFTP                    }
+{                  Executa protocolo SFTP ou FTP                       }
 {----------------------------------------------------------------------}
 
-function executar (ponte: TPonte): boolean;
-var
-    app, connect: String;
-    Security : TSecurityAttributes;
-    start : TStartUpInfo;
-    sock: integer;
+function executarAcesso (ponte: TPonte): boolean;
 begin
     Result := false;
 
     if ponte.Porta = 21 then
-        Result := executarSFTP(ponte)
+        Result := executarFTP(ponte)
     else
     if ponte.Porta = 22 then
-        Result := executarFTP(ponte);
-
-
-
-
-
-
-    if ponte.Porta = 21 then
-        begin
-            connect := ponte.Conta + '@' + ponte.Servidor;
-            app := 'psftp.exe ' + connect;
-        end
-    else
-    if ponte.Porta = 22 then
-        app := 'C:\Windows\System32\ftp.exe ' + ponte.Servidor
-    else
-        begin
-            sintWriteLn('Porta informada não pode ser acessada. Tente a 21 ou 22.');
-            Result := false;
-        end;
-
-    With Security do
-        begin
-            nLength := SizeOf(TSecurityAttributes) ;
-            bInheritHandle := true;
-            lpSecurityDescriptor := NIL;
-        end;
-
-    CreatePipe(InputPipeRead, InputPipeWrite, @Security, 0);
-    CreatePipe(OutputPipeRead, OutputPipeWrite, @Security, 0);
-    CreatePipe(ErrorPipeRead, ErrorPipeWrite, @Security, 0);
-
-    FillChar(Start,Sizeof(Start),#0) ;
-    start.cb := SizeOf(start) ;
-    start.hStdInput := InputPipeRead;
-    start.hStdOutput := OutputPipeWrite;
-    start.hStdError :=  ErrorPipeWrite;
-    start.dwFlags := STARTF_USESTDHANDLES + STARTF_USESHOWWINDOW;
-    start.wShowWindow := SW_HIDE;
-
-    Result := CreateProcess(nil, PChar(app),
-        @Security, @Security,
-        true,
-        CREATE_NEW_CONSOLE or SYNCHRONIZE, nil, nil, start, ProcessInfo);
+        Result := executarSFTP(ponte);
 end;
 
 {----------------------------------------------------------------------}
@@ -291,53 +243,18 @@ var
 begin
     Result := false;
 
-    if not executar(ponte) then
+    if not executarAcesso(ponte) then
         begin
             ERRO := ERRO_CONEXAO;
             progStop;
             exit;
         end;
 
-    response := getPipedData;
-    if pos('Store key in cache?', response) <> 0 then
-        begin
-            WritePipeOut(InputPipeWrite, 'y' + #$0a);
-            response := getPipedData;
-        end;
-
-    if (pos('Us', response) <> 0) then
-        begin
-            WritePipeOut(InputPipeWrite, ponte.Conta + #$0a);
-            response := getPipedData;
-        end;
-        
-    if (pos('password', response) <> 0) or
-       (pos('Senha', response) <> 0) then
-        begin
-            senha := aplicaSenha(ponte.Senha);
-            WritePipeOut(InputPipeWrite, senha + #$0a);
-
-            response := ReadPipeInput(ErrorPipeRead);
-            if pos('Fatal', response) <> 0 then
-                begin
-                    sintWrite('Acesso a conta bloqueado.');
-                    exit;
-                end;
-
-            response := getPipedData;
-            if pos('denied', response) <> 0 then
-                ERRO := ERRO_CONTA
-            else
-                begin
-                    WritePipeOut(InputPipeWrite, 'cd ' + rotaAtual + #$0a);
-                    Result := true;
-                end;
-        end
+    if ponte.Porta = 21 then
+        Result := executarLoginFTP(ponte)
     else
-        begin
-           ERRO := ERRO_CONEXAO;
-           progStop;
-        end;
+    if ponte.Porta = 22 then
+        Result := executarLoginSFTP(ponte);
 end;
 
 {----------------------------------------------------------------------}
@@ -1084,7 +1001,12 @@ begin
             ERRO := ERRO_CONEXAO;
             exit;
         end;
-    if not ContaESenha(ponte) then exit;
+
+    if not ContaESenha(ponte) then
+        begin
+            ERRO := ERRO_CONEXAO;
+            exit;
+        end;
     sintetiza('ponte FTP conectada.');
 end;
 
