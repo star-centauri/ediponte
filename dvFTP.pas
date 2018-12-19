@@ -305,9 +305,6 @@ begin
                                     response := WritePipeOut(InputPipeWrite, 'cd ' + rotaAtual + #$0a);
                                     Result := true;
                                 end;
-
-                            //response := ReadPipeInput(ErrorPipeRead);
-                            //response := getPipedData;
                         end;
                 end
             else
@@ -393,8 +390,8 @@ begin
 
     fileExist := '*' + fileName;
     WritePipeOut(InputPipeWrite, 'ls ' + fileExist + #$0a);
-
     response := getPipedData;
+
     if pos(fileName, response) <> 0 then
         Result := true;
 end;
@@ -993,21 +990,37 @@ var
     c: Char;
     p: integer;
 begin
-     Delay(300);
+     //Delay(300);
      if editarRemotamente then
          begin
              WritePipeOut(InputPipeWrite, 'lcd ' + GetCurrentDir + #$0a);
              response := getPipedData;
 
              WritePipeOut(InputPipeWrite, 'put ' + '$$$temp$$$.txt ' + nomeArqConectado + #$0a);
-             response := getPipedData;
-             if pos('remote', response) <> 0 then
+
+             if ponteConectadaFTP.Porta = 21 then
                  begin
-                     sintWrite('Arquivo gravado remotamente.');
-                     DeleteFile('$$$temp$$$.txt');
+                     response := ReadPipeInput(OutputPipeRead); // ErrorPipeRead
+                     response := ReadPipeInput(ErrorPipeRead);
+                     if response <> '' then
+                         begin
+                             ERRO := ERRO_NEXISARQ;
+                             exit;
+                         end;
                  end
              else
-                 ERRO := ERRO_NEXISARQ;
+             if ponteConectadaFTP.Porta = 22 then
+                 begin
+                     response := getPipedData;
+                     if pos('remote', response) = 0 then
+                         begin
+                             ERRO := ERRO_NEXISARQ;
+                             exit;
+                         end;
+                 end;
+
+             sintWrite('Arquivo gravado remotamente.');
+             DeleteFile('$$$temp$$$.txt');
          end
      else
          begin
@@ -1069,12 +1082,23 @@ begin
                 end;
         end;
 
-    if pos('New local directory', response) <> 0 then
+    if ponteConectadaFTP.Porta = 22 then
         begin
             WritePipeOut(InputPipeWrite, 'get ' + nomeArqBaixar + ' ' + temporarioArq + #$0a);
             response := getPipedData;
 
             if pos('local', response) <> 0 then
+                Result := true
+            else
+                ERRO := ERRO_NEXISARQ;
+        end
+    else
+    if ponteConectadaFTP.Porta = 21 then
+        begin
+            WritePipeOut(InputPipeWrite, 'get ' + nomeArqBaixar + ' ' + temporarioArq + #$0a);
+            response := ReadPipeInput(ErrorPipeRead);
+
+            if Pos('terminada pelo host', response) = 0 then  //Analisar problema de acesso ao host
                 Result := true
             else
                 ERRO := ERRO_NEXISARQ;
