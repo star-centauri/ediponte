@@ -20,6 +20,7 @@ const
      ERRO_NEXISDIR = 'Diretório não existe';
      ERRO_NEXISARQ = 'Arquivo não existe';
      ERRO_OPCINV = 'Opção invalida';
+     ERRO_ACESSTERM = 'Terminado acesso do host';
 
 function tipoDeErro: string;
 

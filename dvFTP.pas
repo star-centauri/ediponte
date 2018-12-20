@@ -298,13 +298,9 @@ begin
                     if pos('Senha', response) <> 0 then
                         begin
                             senha := aplicaSenha(ponte.Senha);
-                            response := WritePipeOut(InputPipeWrite, senha + #$0a);
-
-                            if response <> '' then
-                                begin
-                                    response := WritePipeOut(InputPipeWrite, 'cd ' + rotaAtual + #$0a);
-                                    Result := true;
-                                end;
+                            WritePipeOut(InputPipeWrite, senha + #$0a);
+                            WritePipeOut(InputPipeWrite, 'cd ' + rotaAtual + #$0a);
+                            Result := true;
                         end;
                 end
             else
@@ -863,8 +859,16 @@ begin
         if opcao = 'B' then
             begin
                 editarRemotamente := false;
-                if not baixarArq(nomeArq) then
-                    Result := false;
+                while not baixarArq(nomeArq) do
+                    begin
+                        if tipoDeErro = ERRO_ACESSTERM then
+                            executarAcesso(ponteConectadaFTP)
+                        else
+                            begin
+                                Result := false;
+                                break;
+                            end;
+                    end;
                 prosseguir := false;
             end
         else
@@ -990,7 +994,6 @@ var
     c: Char;
     p: integer;
 begin
-     //Delay(300);
      if editarRemotamente then
          begin
              WritePipeOut(InputPipeWrite, 'lcd ' + GetCurrentDir + #$0a);
@@ -1084,6 +1087,7 @@ begin
 
     if ponteConectadaFTP.Porta = 22 then
         begin
+            Delay(300);
             WritePipeOut(InputPipeWrite, 'get ' + nomeArqBaixar + ' ' + temporarioArq + #$0a);
             response := getPipedData;
 
@@ -1098,10 +1102,10 @@ begin
             WritePipeOut(InputPipeWrite, 'get ' + nomeArqBaixar + ' ' + temporarioArq + #$0a);
             response := ReadPipeInput(ErrorPipeRead);
 
-            if Pos('terminada pelo host', response) = 0 then  //Analisar problema de acesso ao host
-                Result := true
+            if Pos('terminada pelo host', response) <> 0 then
+                ERRO := ERRO_ACESSTERM
             else
-                ERRO := ERRO_NEXISARQ;
+                Result := true;
         end;
 end;
 
