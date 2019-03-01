@@ -155,13 +155,12 @@ var
     BytesRead: Cardinal;
 begin
     Result := '';
-
     PeekNamedPipe(InputPipe, nil, Sizeof(TextBuffer)-1, @BytesRead, NIL, NIL);
 
     if BytesRead > 0 then
         begin
             ReadFile(InputPipe, TextBuffer, Sizeof(TextBuffer)-1, BytesRead, NIL);
-            TextBuffer [bytesRead] := #$0;
+            TextBuffer [BytesRead] := #$0;
             Result := strPas(TextBuffer);
         end;
 end;
@@ -249,19 +248,13 @@ end;
 {----------------------------------------------------------------------}
 
 function getPipedData: string;
-var response: string;
 begin
-    response := '';
-    while not ReadPipeHasData(OutputPipeRead) do
-        begin
-            delay (300);
-            sintClek;
-        end;
     repeat
-        Delay(800);
-        response := response + ReadPipeInput(OutputPipeRead);
-    until not ReadPipeHasData(OutputPipeRead);
-    result := response;
+        delay(800);
+        sintClek;
+    until ReadPipeHasData(OutputPipeRead);
+
+    Result := ReadPipeInput(OutputPipeRead);
 end;
 
 {----------------------------------------------------------------------}
@@ -299,8 +292,18 @@ begin
                         begin
                             senha := aplicaSenha(ponte.Senha);
                             WritePipeOut(InputPipeWrite, senha + #$0a);
-                            WritePipeOut(InputPipeWrite, 'cd ' + rotaAtual + #$0a);
-                            Result := true;
+
+                            response := getPipedData;
+                            if pos('incorrect', response) <> 0 then
+                                begin
+                                    sintWrite('Login ou senha incorreta.');
+                                    exit;
+                                end
+                            else
+                                begin
+                                    WritePipeOut(InputPipeWrite, 'cd ' + rotaAtual + #$0a);
+                                    Result := true;
+                                end;
                         end;
                 end
             else
