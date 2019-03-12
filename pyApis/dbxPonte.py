@@ -7,9 +7,9 @@ def access_token():
     token = dropbox.Dropbox('6m97rPtmSgAAAAAAAAAANkC4q_VO1s9bI2niEY0GDNWeTg-N3kKd_iKFypsxUuql')
     try:
         token.users_get_current_account()
-        print('200')
+        print('200: success')
     except dropbox.exceptions.AuthError as err:
-        raise StandardError("ERROR: 500")
+        raise StandardError("500: error access")
 
 def listar_arq():
     global token
@@ -17,25 +17,42 @@ def listar_arq():
     if(rota == 'raiz'):
         rota = ''
 
-    for entry in token.files_list_folder(rota).entries:
-        name = ""
-        
-        if(type(entry) is dropbox.files.FolderMetadata):
-            name = '{} Diretório'.format(entry.name)
-        else:
-            name = entry.name
+    try:
+        for entry in token.files_list_folder(rota).entries:
+            name = ""
 
-        if(entry.sharing_info is not None):
-            name = '{} *'.format(name)
+            if(type(entry) is dropbox.files.FolderMetadata):
+                name = '{} Diretório'.format(entry.name)
+            else:
+                name = entry.name
 
-        print(name)
+            if(entry.sharing_info is not None):
+                name = '{} (compartilhado)'.format(name)
 
+            print(name)
+    except dropbox.exceptions.ApiError as error:
+        print('500: {}'.format(error.user_message_text))
+#Refatorar
 def detalhe_arq():
     global token
-
     arquivo = input('Arquivo: ')
-    metadados = token.files_get_metadata(path=arquivo, include_media_info=True, include_has_explicit_shared_members=True)
-    print(metadados)
+    propriedades = "";
+
+    try:
+        res = token.files_get_metadata(path=arquivo, include_media_info=True, include_has_explicit_shared_members=True)
+        #Id, Name, data atualização, tamanho, id group
+        print(res)
+        if(type(res) is dropbox.files.FolderMetadata):
+            propriedades = '{0}|{1}'.format(res.id, res.name)
+        else:
+            propriedades = '{0}|{1}|{2}|{3}'.format(res.id, res.name, res.server_modified, res.size)
+
+        if(res.sharing_info is not None):
+            propriedades = '{0}|{1}'.format(propriedades, res.sharing_info.shared_folder_id)
+
+        print(propriedades)
+    except dropbox.exceptions.ApiError as error:
+        print('500: {}'.format(error.user_message_text))
 
 def enviar_arq():
     global token
@@ -137,6 +154,8 @@ def main():
             criar_pasta()
         elif(opcao == 'SAIR' or opcao == 'TERMINAR'):
             processando = False
+        else:
+            print('404: not found option')
 
 
     access_token()
