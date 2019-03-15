@@ -11,7 +11,7 @@ uses
     sysUtils;
 
 const
-    VERSAO = '2.0';
+    VERSAO = '3.0';
 
 type
     DataType = (Nada, Arquivo, Diretorio);

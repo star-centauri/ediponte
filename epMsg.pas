@@ -15,8 +15,7 @@ interface
 uses windows, dvcrt, dvwin, sysUtils;
 
 procedure mensagem (nomeArq: string; nlf: integer);
-procedure tituloJanela (s: string);
-procedure naoImplem;
+procedure tituloJanela (titulo: string);
 
 implementation
 
@@ -28,7 +27,7 @@ begin
         s := 'EDIPONTE v.'
     else
     if nomeArq = 'EPFIM' then
-        s := 'Fim do ediponte'
+        s := 'Fim do ediponte'    //***
     else
     if nomeArq = 'EPNOMARQ' then
         s := 'Informe o nome da ponte ou use as setas para selecionar '
@@ -195,22 +194,12 @@ end;
 {                       Muda título da janela                          }
 {----------------------------------------------------------------------}
 
-procedure tituloJanela (s: string);
+procedure tituloJanela (titulo: string);
 var
     nomeJan: array [0..144] of char;
 begin
-    strPcopy (nomeJan, 'Ediponte ' + s);
+    strPcopy (nomeJan, titulo);
     setWindowText (crtWindow, nomeJan);
 end;
-
-{----------------------------------------------------------------------}
-{                       Rotina não implementada
-{----------------------------------------------------------------------}
-
-procedure naoImplem;
-begin
-    sintWriteln ('Não implementado');
-end;
-
 
 end.

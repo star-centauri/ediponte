@@ -515,8 +515,8 @@ begin
                     Result := false;
                 prosseguir := false;
             end
-        else
-        if opcao = 'P' then naoImplem
+        //else
+        //if opcao = 'P' then naoImplem
         else
         if opcao = 'R' then
             begin
