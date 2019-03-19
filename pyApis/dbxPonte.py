@@ -41,7 +41,6 @@ def detalhe_arq():
     try:
         res = token.files_get_metadata(path=arquivo, include_media_info=True, include_has_explicit_shared_members=True)
         #Id, Name, data atualização, tamanho, id group
-        print(res)
         if(type(res) is dropbox.files.FolderMetadata):
             propriedades = '{0}|{1}'.format(res.id, res.name)
         else:
@@ -157,8 +156,6 @@ def main():
         else:
             print('404: not found option')
 
-
-    access_token()
 
 if __name__ == '__main__':
     main()

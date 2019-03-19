@@ -12,6 +12,7 @@ uses
   epMsg,
   epError,
   epeditor,
+  epPipe,
   classes,
   synacode,
   windows,
@@ -42,128 +43,8 @@ function voltarDirScripVox: Boolean;
 
 implementation
 var
-    InputPipeRead, InputPipeWrite: THandle;
-    OutputPipeRead, OutputPipeWrite: Cardinal;
-    ErrorPipeRead, ErrorPipeWrite: THandle;
-    ProcessInfo : TProcessInformation;
     rotaAtual, tipoScript: string;
     ponteConectadaScript: TPonte;
-
-
-{----------------------------------------------------------------------}
-{                  Executa arquivo de comando PSFTP                    }
-{----------------------------------------------------------------------}
-
-function ReadPipeInput(InputPipe: THandle): String;
-var
-    TextBuffer: array[0..32767] of char;
-    BytesRead: Cardinal;
-begin
-    Result := '';
-    PeekNamedPipe(InputPipe, nil, Sizeof(TextBuffer)-1, @BytesRead, NIL, NIL);
-
-    if BytesRead > 0 then
-        begin
-            ReadFile(InputPipe, TextBuffer, Sizeof(TextBuffer)-1, BytesRead, NIL);
-            TextBuffer [BytesRead] := #$0;
-            Result := strPas(TextBuffer);
-        end;
-end;
-
-{----------------------------------------------------------------------}
-{               Verifica se chegaram dados do Pipe                     }
-{----------------------------------------------------------------------}
-
-function ReadPipeHasData(whatPipe: THandle): boolean;
-var numBytes: Cardinal;
-begin
-    PeekNamedPipe(whatPipe, nil, 0, nil, @numBytes, NIL);
-    result := numBytes > 0;
-end;
-
-{----------------------------------------------------------------------}
-{                 pega várias linhas vindas do servidor                }
-{----------------------------------------------------------------------}
-
-function getPipedData: string;
-begin
-    repeat
-        delay(800);
-        sintClek;
-    until ReadPipeHasData(OutputPipeRead);
-
-    Result := ReadPipeInput(OutputPipeRead);
-end;
-
-{----------------------------------------------------------------------}
-{                  Escrever no pipe do psftp                           }
-{----------------------------------------------------------------------}
-
-function WritePipeOut(OutputPipe: THandle; InString: string) : string;
-var
-    byteswritten: DWord;
-begin
-    WriteFile (OutputPipe, Instring[1], Length(Instring), byteswritten, nil);
-    Result := ReadPipeInput(OutputPipeRead);
-end;
-
-{----------------------------------------------------------------------}
-{                      Para execução do pipe                           }
-{----------------------------------------------------------------------}
-
-procedure progStop;
-begin
-    //WritePipeOut(InputPipeWrite, 'quit' + #$0a);
-
-    // close pipe handles
-    CloseHandle(InputPipeRead);
-    CloseHandle(InputPipeWrite);
-    CloseHandle(OutputPipeRead);
-    CloseHandle(OutputPipeWrite);
-    CloseHandle(ErrorPipeRead);
-    CloseHandle(ErrorPipeWrite);
-
-    // close process handles
-    CloseHandle(ProcessInfo.hProcess);
-    TerminateProcess(ProcessInfo.hProcess, 0);
-end;
-
-{----------------------------------------------------------------------}
-{               Executa a inicialização do servidor                    }
-{----------------------------------------------------------------------}
-
-function executarDropboxApi (): boolean;
-var
-    app: String;
-    Security : TSecurityAttributes;
-    start : TStartUpInfo;
-begin
-    app := '.\pyApis\dbxPonte.exe';
-
-    With Security do
-        begin
-            nLength := SizeOf(TSecurityAttributes) ;
-            bInheritHandle := true;
-            lpSecurityDescriptor := NIL;
-        end;
-
-    CreatePipe(InputPipeRead, InputPipeWrite, @Security, 0);
-    CreatePipe(OutputPipeRead, OutputPipeWrite, @Security, 0);
-    CreatePipe(ErrorPipeRead, ErrorPipeWrite, @Security, 0);
-
-    FillChar(Start,Sizeof(Start),#0) ;
-    start.cb := SizeOf(start) ;
-    start.hStdInput := InputPipeRead;
-    start.hStdOutput := OutputPipeWrite;
-    start.hStdError :=  ErrorPipeWrite;
-    start.dwFlags := STARTF_USESTDHANDLES + STARTF_USESHOWWINDOW;
-    start.wShowWindow := SW_HIDE;
-
-    Result := CreateProcess(nil, PChar(app),
-        @Security, @Security,
-        true,
-        CREATE_NEW_CONSOLE or SYNCHRONIZE, nil, nil, start, ProcessInfo);
-end;
 
 {----------------------------------------------------------------------}
 {       Cria caminho de rota de acordo com servidor ScriptVox          }
@@ -253,7 +134,7 @@ begin
         begin
             if rotaAtual[length(rotaAtual)] <> '\' then
                 rotaAtual := rotaAtual + '\';
-                
+
             rotaAtual := rotaAtual + Dir;
             ChDir(rotaAtual);
         end
@@ -617,7 +498,7 @@ begin
             tipoScript := ponte.Tipo;
             createRotaScriptVox(nomePonte);
 
-            if not executarDropboxApi then
+            if not executarAcesso('.\pyApis\dbxPonte.exe') then
                 begin
                     ERRO := ERRO_CONEXAO;
                     progStop;
