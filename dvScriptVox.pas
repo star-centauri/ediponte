@@ -504,7 +504,7 @@ begin
             WritePipeOut(InputPipeWrite, 'login' + #$0a);
             response := getPipedData;
 
-            if not Pos('200', response) the
+            if Pos('200', response) = 0 then
                 begin
                     progStop;
                     Exit;
