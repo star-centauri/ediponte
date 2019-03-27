@@ -127,6 +127,94 @@ def criar_pasta():
     except Exception as err:
         print("Failed to download %s\n%s" % (rotaPasta, err))
 
+def remover_contato():
+    global token
+
+    email = input("email: ")
+    try:
+        token.contacts_delete_manual_contacts_batch(email)
+        print(200)
+    except Exception as err:
+        print("500: " + err)
+
+def solicitar_permissao_dado():
+    global token
+
+    title = input("titulo: ")
+    pasta_destino = input("pasta destino: ")
+
+    try:
+        token.file_requests_create(title, pasta_destino, deadline=None, open=True)
+        print(200)
+    except Exception as err:
+        print('500: {}'.format(error.user_message_text))
+
+def copiar_arq():
+    global token
+
+    de_caminho = input("Da pasta: ")
+    para_caminho = input("Para pasta: ")
+
+    try:
+        token.files_copy(de_caminho, para_caminho, allow_shared_folder=False, autorename=False, allow_ownership_transfer=False)
+        print(200)
+    except Exception as err:
+        print("Failed to download %s\n%s" % (rotaPasta, err))
+
+def visualizar_arq():
+    global token
+
+    arquivo = input("arquivo: ")
+
+    try:
+        token.files_get_preview(arquivo, rev=None)
+        print(200)
+    except Exception as err:
+        print('500: {}'.format(error.user_message_text))
+
+def gerar_link_temporario():
+    global token
+
+    arquivo = input("arquivo: ")
+
+    try:
+        token.files_get_temporary_link(arquivo)
+        print(200)
+    except Exception as err:
+        print('500: {}'.format(err.user_message_text))
+
+def adicionar_membro_dado():
+    global token
+
+    arquivo = ("arquivo: ")
+    membro = ("membro: ")
+    mensagem = ("mensagem: ")
+
+    try:
+        token.fsharing_add_file_member(arquivo, membro, custom_message=mensagem, quiet=False, access_level=AccessLevel('viewer', None), add_message_as_comment=False)
+        print(200)
+    except Exception as err:
+        print('500: {}'.format(err.user_message_text))
+
+def visualizar_membros_arq():
+    global token
+
+    arquivo = input("arquivo compartilhado: ")
+    try:
+        token.sharing_list_file_members(arquivo, actions=None, include_inherited=True, limit=100)
+        print(200)
+    except Exception as err:
+        print('500: {}'.format(err.user_message_text))
+
+def espaco_conta():
+    global token
+
+    try:
+        token.users_get_space_usage()
+        print(200)
+    except Exception as err:
+        print('500: {}'.format(err.user_message_text))
+
 def main():
     processando = True;
 
@@ -135,7 +223,7 @@ def main():
 
         if(opcao == 'LOGIN'):
             access_token()
-        elif(opcao == 'ARQUIVOS'):
+        elif(opcao == 'LISTAR'):
             listar_arq()
         elif(opcao == 'ENVIAR'):
             enviar_arq()
@@ -151,6 +239,22 @@ def main():
             remover_arq_ou_pasta()
         elif(opcao == 'PASTA'):
             criar_pasta()
+        elif(opcao == 'REMOVER CONTATO'):
+            remover_contato()
+        elif(opcao == 'SOLICITAR PERMISSAO'):
+            solicitar_permissao_dado()
+        elif(opcao == 'COPIAR'):
+            copiar_arq()
+        elif(opcao == 'VISUALIZAR'):
+            visualizar_arq()
+        elif(opcao == 'LINK'):
+            gerar_link_temporario()
+        elif(opcao == 'ADICIONAR MEMBRO'):
+            adicionar_membro_dado()
+        elif(opcao == 'VISUALIZAR MEMBROS'):
+            visualizar_membros_arq()
+        elif(opcao == 'CONTA'):
+            espaco_conta()
         elif(opcao == 'SAIR' or opcao == 'TERMINAR'):
             processando = False
         else:
