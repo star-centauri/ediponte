@@ -55,19 +55,15 @@ var
     p: integer;
 begin
     Result := false;
-
+    p := pos('@', caminho);
+    
     if tipoScript = 'DROPBOX' then
         begin
-            p := pos('@', caminho);
-            rotaAtual := 'c:\Users\' + ponteConectadaScript.Conta + '\' + 'Dropbox\';
-
+            rotaAtual := '\';
             if p <> 0 then
-                begin
-                    rotaAtual := rotaAtual + copy(caminho, p-1, Length(caminho)+1);
-                    Result := true;
-                end
-            else
-                Result := true;
+                rotaAtual := rotaAtual + copy(caminho, p-1, Length(caminho)+1);
+
+            Result := true;
         end
 end;
 
@@ -508,6 +504,11 @@ begin
             WritePipeOut(InputPipeWrite, 'login' + #$0a);
             response := getPipedData;
 
+            if not Pos('200', response) the
+                begin
+                    progStop;
+                    Exit;
+                end;
             sintetiza('ponte '+ ponte.Tipo + ' conectada.');
         end
     else
@@ -517,6 +518,9 @@ end;
 procedure fechaScriptVox;
 begin
     if tipoScript = 'DROPBOX' then
-        rotaAtual := '';
+        begin
+            rotaAtual := '';
+            progStop;
+        end;
 end;
 end.
