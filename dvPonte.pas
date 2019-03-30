@@ -204,7 +204,9 @@ begin
          listarArqHTTP(listar)
      else
      if ponteConectada.Tipo = 'FTP' then
-         listarArqFTP(listar);
+         listarArqFTP(listar)
+     else
+         listarArqScript(listar);
 end;
 
 { --------------------------------------------------------------------------------- }
@@ -223,7 +225,7 @@ begin
             if ponteConectada.Tipo = 'FTP' then
                 Result := _findFirstFTP(FileMask, Attributes, SearchResult, listar)
             else
-                Result := _findFirstScripVox(FileMask, Attributes, SearchResult);
+                Result := _findFirstScripVox(FileMask, Attributes, SearchResult, listar);
         end
     else
         Result := FindFirst(FileMask, Attributes, SearchResult);
@@ -243,7 +245,7 @@ begin
             if ponteConectada.Tipo = 'FTP' then
                 Result := _findNextFTP(SearchResults, listar)
             else
-                Result := _findNextScripVox(SearchResults);
+                Result := _findNextScripVox(SearchResults, listar);
         end
     else
        Result := FindNext(SearchResults)

@@ -24,12 +24,13 @@ function inicializaScriptVox(ponte: TPonte; nomePonte: string): Boolean;
 procedure fechaScriptVox;
 function createRotaScriptVox(caminho: string): Boolean;
 function executaOpcaoScripVox(opcao: string; out prosseguir: boolean; nomeArq: string; tipoDado: DataType): Boolean;
+function listarArqScript(out listar: TStringList): Boolean;
 
 { funções e procedures para manipulação de arquivos }
 function opcoesArqScripVox(listaOpcoes: TStringList;  var tabLetrasOpcao: string): Boolean;
 function _FileExistsScripVox(fileName: string): Boolean;
-function _findFirstScripVox(FileMask: string; Attributes: Integer; var SearchResult: TSearchRec): integer;
-function _findNextScripVox(var SearchResults: TSearchRec): integer;
+function _findFirstScripVox(FileMask: string; Attributes: Integer; var SearchResult: TSearchRec; listar: TStringList): integer;
+function _findNextScripVox(var SearchResults: TSearchRec; listar: TStringList): integer;
 procedure _assignFileScripVox(var arq: TextFile; nomeArq: string);
 function _ioresultScripVox(ponte: TPonte): integer;
 procedure _closeFileScripVox(var FileHandle: TextFile);
@@ -55,19 +56,15 @@ var
     p: integer;
 begin
     Result := false;
-
+    p := pos('@', caminho);
+    
     if tipoScript = 'DROPBOX' then
         begin
-            p := pos('@', caminho);
-            rotaAtual := 'c:\Users\' + ponteConectadaScript.Conta + '\' + 'Dropbox\';
-
+            rotaAtual := '\';
             if p <> 0 then
-                begin
-                    rotaAtual := rotaAtual + copy(caminho, p-1, Length(caminho)+1);
-                    Result := true;
-                end
-            else
-                Result := true;
+                rotaAtual := rotaAtual + copy(caminho, p-1, Length(caminho)+1);
+
+            Result := true;
         end
 end;
 
@@ -79,7 +76,10 @@ end;
 function _directoryexistScripVox: Boolean;
 begin
     if tipoScript = 'DROPBOX' then
-        Result := DirectoryExists(rotaAtual);
+        begin
+            WritePipeOut(InputPipeWrite, 'PROPRIEDADE' + #$0a);
+            WritePipeOut(InputPipeWrite, rotaAtual + #$0a);
+        end;
 end;
 
 {----------------------------------------------------------------------}
@@ -90,42 +90,94 @@ end;
 function _FileExistsScripVox(fileName: string): Boolean;
 begin
     if tipoScript = 'DROPBOX' then
-        Result := FileExists(fileName);
+        begin
+            WritePipeOut(InputPipeWrite, 'PROPRIEDADE' + #$0a);
+            WritePipeOut(InputPipeWrite, '\' + fileName + #$0a);
+        end;
 end;
+
+{----------------------------------------------------------------------}
+{           Retorna valor do response da busca pela conta              }
+{----------------------------------------------------------------------}
+
+function listarArqScript(out listar: TStringList): Boolean;
+var
+    List: TStringList;
+    response: string;
+    i: integer;
+begin
+    Result := true;
+    
+    WritePipeOut(InputPipeWrite, 'LISTAR' + #$0a);
+    if rotaAtual = '\' then
+        WritePipeOut(InputPipeWrite, 'raiz' + #$0a)
+    else
+        WritePipeOut(InputPipeWrite, rotaAtual + #$0a);
+
+    response := getPipedData;
+
+    if response <> '' then
+        begin
+            List := TStringList.Create;
+
+            ExtractStrings([#$D, #$A], [], PChar(response), List);
+            if List.Count = 1 then
+                begin
+                    ERRO := ERRO_NEXISDIR;
+                    Result := false;
+                    exit;
+                end;
+
+            listar.Add(List[i]);
+        end;
+end;
+
 
 {----------------------------------------------------------------------}
 {              função findFirst para protocolo scriptVox               }
 {----------------------------------------------------------------------}
 
-function _findFirstScripVox(FileMask: string; Attributes: Integer; var SearchResult: TSearchRec): integer;
+function _findFirstScripVox(FileMask: string; Attributes: Integer; var SearchResult: TSearchRec; listar: TStringList): integer;
+var
+   item: string;
+   lengthDir: integer;
 begin
-    if tipoScript = 'DROPBOX' then
+    ponteiro_prox := 0;
+    lengthDir := listar.Count;
+
+    if lengthDir = 0 then
         begin
-            SetCurrentDir(rotaAtual);
-            Result := FindFirst(FileMask, Attributes, SearchResult);
-        end
+            ERRO := ERRO_CONEXAO;
+            Result := 1;
+            exit;
+        end;
+
+    if (FileMask = '*') or
+       (FileMask = '?') or
+       (FileMask = '*.*') or
+       (FileMask = '*.**') then
+        begin
+            item := listar[ponteiro_prox];
+            SearchResult.Name := item;
+            StrPCopy(SearchResult.FindData.cFileName, item);
+        end;
+    Result := 0;
 end;
 
-function _findNextScripVox(var SearchResults: TSearchRec): integer;
+function _findNextScripVox(var SearchResults: TSearchRec; listar: TStringList): integer;
 var
-    retorno: integer;
+   item: string;
 begin
-     if tipoScript = 'DROPBOX' then
-         begin
-             repeat
-                 retorno := FindNext(SearchResults);
-             until ((SearchResults.Name <> '.dropbox') and
-                   (SearchResults.Name <> '.dropbox.cache') and
-                   (SearchResults.Name <> 'desktop.ini')) or (retorno > 0);
+    if ponteiro_prox = (listar.Count - 1) then
+        Result := 1
+    else
+        begin
+            item := listar[ponteiro_prox];
+            SearchResults.Name := item;
+            StrPCopy(SearchResults.FindData.cFileName, item);
 
-             if pos('.', SearchResults.Name) = 0 then
-                 begin
-                     SearchResults.Name := SearchResults.Name + ' Diretório';
-                     StrPCopy(SearchResults.FindData.cFileName, SearchResults.Name);
-                 end;
-
-             Result := retorno;
-         end
+            Result := 0;
+        end;
 end;
 
 procedure _ChDirScripVox(Dir: string);
@@ -508,6 +560,11 @@ begin
             WritePipeOut(InputPipeWrite, 'login' + #$0a);
             response := getPipedData;
 
+            if Pos('200', response) = 0 then
+                begin
+                    progStop;
+                    Exit;
+                end;
             sintetiza('ponte '+ ponte.Tipo + ' conectada.');
         end
     else
@@ -517,6 +574,9 @@ end;
 procedure fechaScriptVox;
 begin
     if tipoScript = 'DROPBOX' then
-        rotaAtual := '';
+        begin
+            rotaAtual := '';
+            progStop;
+        end;
 end;
 end.

@@ -44,7 +44,7 @@ def listar_arq():
             print(name)
     except dropbox.exceptions.ApiError as error:
         print('500: {}'.format(error.user_message_text))
-#Refatorar
+
 def detalhe_arq():
     global token
     arquivo = input('Arquivo: ')
@@ -65,7 +65,6 @@ def detalhe_arq():
     except dropbox.exceptions.ApiError as e:
         if(e.error.is_path()):
             type_error(e.error.get_path())
-        #print('500: {}'.format(e.user_message_text))
 
 def enviar_arq():
     global token
