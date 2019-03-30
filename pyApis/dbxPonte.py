@@ -2,6 +2,18 @@ import dropbox, sys, os
 
 token = None
 
+def type_error(tag):
+    if(tag.is_not_found()):
+        print('404: arquivo/diretório não encontrado nesta rota ou não existe.')
+    elif(tag.is_malformed_path()):
+        print('405: O caminho fornecido não satisfaz o formato de caminho requerido.')
+    elif(tag.is_not_file()):
+        print('401: Estávamos esperando um arquivo, mas o caminho indicado refere-se a algo que não é um arquivo.')
+    elif(tag.is_not_folder()):
+        print('401: Estávamos esperando uma pasta, mas o caminho indicado refere-se a algo que não é uma pasta.')
+    elif(tag.is_restricted_content()):
+        print('403: O arquivo não pode ser transferido porque o conteúdo é restrito.')
+
 def access_token():
     global token
     token = dropbox.Dropbox('6m97rPtmSgAAAAAAAAAANkC4q_VO1s9bI2niEY0GDNWeTg-N3kKd_iKFypsxUuql')
@@ -50,8 +62,10 @@ def detalhe_arq():
             propriedades = '{0}|{1}'.format(propriedades, res.sharing_info.shared_folder_id)
 
         print(propriedades)
-    except dropbox.exceptions.ApiError as error:
-        print('500: {}'.format(error.user_message_text))
+    except dropbox.exceptions.ApiError as e:
+        if(e.error.is_path()):
+            type_error(e.error.get_path())
+        #print('500: {}'.format(e.user_message_text))
 
 def enviar_arq():
     global token
