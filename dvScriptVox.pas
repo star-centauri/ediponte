@@ -60,7 +60,7 @@ begin
     
     if tipoScript = 'DROPBOX' then
         begin
-            rotaAtual := '\';
+            rotaAtual := '/';
             if p <> 0 then
                 rotaAtual := rotaAtual + copy(caminho, p-1, Length(caminho)+1);
 
@@ -92,7 +92,7 @@ begin
     if tipoScript = 'DROPBOX' then
         begin
             WritePipeOut(InputPipeWrite, 'PROPRIEDADE' + #$0a);
-            WritePipeOut(InputPipeWrite, '\' + fileName + #$0a);
+            WritePipeOut(InputPipeWrite, '/' + fileName + #$0a);
         end;
 end;
 
@@ -102,14 +102,13 @@ end;
 
 function listarArqScript(out listar: TStringList): Boolean;
 var
-    List: TStringList;
-    response: string;
-    i: integer;
+    response, item: string;
+    i, p: integer;
 begin
     Result := true;
-    
+
     WritePipeOut(InputPipeWrite, 'LISTAR' + #$0a);
-    if rotaAtual = '\' then
+    if rotaAtual = '/' then
         WritePipeOut(InputPipeWrite, 'raiz' + #$0a)
     else
         WritePipeOut(InputPipeWrite, rotaAtual + #$0a);
@@ -118,17 +117,14 @@ begin
 
     if response <> '' then
         begin
-            List := TStringList.Create;
-
-            ExtractStrings([#$D, #$A], [], PChar(response), List);
-            if List.Count = 1 then
+            listar.Add('..');
+            while response <> '' do
                 begin
-                    ERRO := ERRO_NEXISDIR;
-                    Result := false;
-                    exit;
+                    p := Pos(''#$D#$A'', response);
+                    item := copy(response, 1, p-1);
+                    listar.Add(item);
+                    delete(response, 1, p+1);
                 end;
-
-            listar.Add(List[i]);
         end;
 end;
 
@@ -168,7 +164,7 @@ function _findNextScripVox(var SearchResults: TSearchRec; listar: TStringList): 
 var
    item: string;
 begin
-    if ponteiro_prox = (listar.Count - 1) then
+    if ponteiro_prox = listar.Count then
         Result := 1
     else
         begin
@@ -184,12 +180,11 @@ procedure _ChDirScripVox(Dir: string);
 begin
     if ponteConectadaScript.Tipo = 'DROPBOX' then
         begin
-            if rotaAtual[length(rotaAtual)] <> '\' then
-                rotaAtual := rotaAtual + '\';
-
-            rotaAtual := rotaAtual + Dir;
-            ChDir(rotaAtual);
-        end
+            if rotaAtual = '/' then
+                rotaAtual := rotaAtual + Dir
+            else
+                rotaAtual := rotaAtual + '/' + Dir;
+        end;
 end;
 
 function voltarDirScripVox: Boolean;
@@ -203,17 +198,17 @@ begin
         begin
             copyRota := copy(rotaAtual, 1, length(rotaAtual)-1);
 
-            p := Pos('\', copyRota);
+            p := Pos('/', copyRota);
             while p <> 0 do
                 begin
                     delete(copyRota, 1, p);
-                    p := Pos('\', copyRota);
+                    p := Pos('/', copyRota);
                 end;
 
             p := length(rotaAtual) - length(copyRota) - 1;
             rotaAtual := copy(rotaAtual, 1, p);
 
-            if pos('Dropbox\', rotaAtual) <> 0 then
+            if rotaAtual <> '' then
                 Result := true;
         end;
 end;
