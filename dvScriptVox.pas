@@ -44,7 +44,7 @@ function voltarDirScripVox: Boolean;
 
 implementation
 var
-    rotaAtual, tipoScript: string;
+    rotaAtual, tipoScript, nomeArqConectado: string;
     ponteConectadaScript: TPonte;
 
 {----------------------------------------------------------------------}
@@ -88,11 +88,15 @@ end;
 {----------------------------------------------------------------------}
 
 function _FileExistsScripVox(fileName: string): Boolean;
+var
+    response: string;
 begin
     if tipoScript = 'DROPBOX' then
         begin
             WritePipeOut(InputPipeWrite, 'PROPRIEDADE' + #$0a);
             WritePipeOut(InputPipeWrite, '/' + fileName + #$0a);
+
+            response := getPipedData;
         end;
 end;
 
@@ -430,6 +434,8 @@ function executaOpcaoScripVox(opcao: string; out prosseguir: boolean; nomeArq: s
 begin
     Result := false;
 
+    if tipoDado = Arquivo then nomeArqConectado := nomeArq;
+
     if tipoDado = Arquivo then
         if opcao = 'E' then
            begin
@@ -526,8 +532,20 @@ begin
 end;
 
 procedure _resetScripVox(var FileHandle: TextFile);
+var
+    response: string;
 begin
     if tipoScript = 'DROPBOX' then
+        begin
+            WritePipeOut(InputPipeWrite, 'BAIXAR');
+            WritePipeOut(InputPipeWrite, rotaLocal + #$0a);
+            WritePipeOut(InputPipeWrite, rotaRemota + #$0a);
+
+            response := getPipedData;
+
+            if pos('Failed', response) <> 0 then
+                ERRO := ERRO_ACESSTERM;
+        end;
         Reset(FileHandle);
 end;
 
