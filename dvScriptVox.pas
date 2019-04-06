@@ -44,7 +44,7 @@ function voltarDirScripVox: Boolean;
 
 implementation
 var
-    rotaAtual, tipoScript: string;
+    rotaAtual, tipoScript, nomeArqConectado: string;
     ponteConectadaScript: TPonte;
 
 {----------------------------------------------------------------------}
@@ -88,11 +88,24 @@ end;
 {----------------------------------------------------------------------}
 
 function _FileExistsScripVox(fileName: string): Boolean;
+var
+    rota, response: string;
 begin
+    Result := false;
+
+    if rotaAtual = '/' then
+        rota := rotaAtual + fileName
+    else
+        rota := rotaAtual + '/' + fileName;
+
     if tipoScript = 'DROPBOX' then
         begin
             WritePipeOut(InputPipeWrite, 'PROPRIEDADE' + #$0a);
-            WritePipeOut(InputPipeWrite, '/' + fileName + #$0a);
+            response := WritePipeOut(InputPipeWrite, rota + #$0a);
+            response := getPipedData;
+
+            if response <> '' then
+                Result := true;
         end;
 end;
 
@@ -430,6 +443,8 @@ function executaOpcaoScripVox(opcao: string; out prosseguir: boolean; nomeArq: s
 begin
     Result := false;
 
+    if tipoDado = Arquivo then nomeArqConectado := nomeArq;
+
     if tipoDado = Arquivo then
         if opcao = 'E' then
            begin
@@ -518,17 +533,47 @@ begin
 end;
 
 procedure _closeFileScripVox(var FileHandle: TextFile);
+var
+    response: String;
 begin
+
     if tipoScript = 'DROPBOX' then
         begin
-            //CloseFile(FileHandle);
+            WritePipeOut(InputPipeWrite, 'ENVIAR' + #$0a);
+            WritePipeOut(InputPipeWrite, nomeArqConectado + #$0a);
+            WritePipeOut(InputPipeWrite, GetCurrentDir + #$0a);
+            WritePipeOut(InputPipeWrite, rotaAtual + #$0a);
+
+            response := getPipedData;
+
+            if pos('200', response) <> 0 then
+                DeleteFile(nomeArqConectado);
         end;
 end;
 
 procedure _resetScripVox(var FileHandle: TextFile);
+var
+    rotaLocal, rotaRemota, response: String;
 begin
+    if rotaAtual = '/' then
+        rotaRemota := rotaAtual + nomeArqConectado
+    else
+        rotaRemota := rotaAtual + '/' + nomeArqConectado;
+
+    rotaLocal := GetCurrentDir + '\' + nomeArqConectado;
+
     if tipoScript = 'DROPBOX' then
-        Reset(FileHandle);
+        begin
+            WritePipeOut(InputPipeWrite, 'BAIXAR' + #$0a);
+            WritePipeOut(InputPipeWrite, rotaLocal + #$0a);
+            WritePipeOut(InputPipeWrite, rotaRemota + #$0a);
+
+            response := getPipedData;
+
+            if pos('200', response) = 0 then
+                ERRO := ERRO_ACESSTERM;
+        end;
+    Reset(FileHandle);
 end;
 
 function inicializaScriptVox(ponte: TPonte; nomePonte: string): Boolean;

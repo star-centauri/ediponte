@@ -69,16 +69,22 @@ def detalhe_arq():
 def enviar_arq():
     global token
 
-    rotaArq = input("rota arquivo: ")
-    nomeArq = input("Nome arquivos: ")
+    nomeArq = input('Nome arquivos: ')
+    rotaLocal = input('Rota local: ')
+    rotaRemota = input('Rota remota: ')
 
     try:
-        file_path = os.path.join(rotaArq, nomeArq)
+        file_path = os.path.join(rotaLocal, nomeArq)
+        dest_path = os.path.join(rotaRemota, nomeArq)
 
         with open(file_path, "rb") as f:
-                token.files_upload(f.read(), "/{}".format(nomeArq))
-    except Exception as err:
-        print("Failed to upload %s\n%s" % (nomeArq, err))
+            token.files_upload(f.read(), dest_path, mode=dropbox.files.WriteMode('overwrite', None), mute=True)
+
+        print('200: enviado com sucesso.')
+    except dropbox.exceptions.ApiError as e:
+        if(e.error.is_path()):
+            if(e.error.get_path()):
+                print('203: Não é possível salvar o conteúdo carregado em um arquivo.')
 
 def baixar_arq():
     global token
@@ -87,8 +93,8 @@ def baixar_arq():
     rotaArq = input('arquivo: ')
 
     try:
-        file_path = os.path.join(rotaLocal, rotaArq)
-        token.files_download_to_file(file_path, rotaArq)
+        #file_path = os.path.join(rotaLocal, rotaArq)
+        token.files_download_to_file(rotaLocal, rotaArq)
         print(200)
     except Exception as err:
         print("Failed to download %s\n%s" % (rotaArq, err))
