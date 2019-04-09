@@ -357,9 +357,16 @@ begin
 end;
 
 function deletaArq(nomeArq: string): Boolean;
-var c: char;
+var
+    c: char;
+    rotaRemota, response: string;
 begin
    Result := false;
+
+   if rotaAtual = '/' then
+        rotaRemota := rotaAtual + nomeArq
+    else
+        rotaRemota := rotaAtual + '/' + nomeArq;
 
    if tipoScript = 'DROPBOX' then
        begin
@@ -368,17 +375,13 @@ begin
 
             if UpperCase(c) = 'S' then
                 begin
-                    if GetCurrentDir <> rotaAtual then
-                        SetCurrentDir(rotaAtual);
+                    WritePipeOut(InputPipeWrite, 'EXCLUIR' + #$0a);
+                    WritePipeOut(InputPipeWrite, rotaRemota + #$0a);
 
-                    if FileExists(nomeArq) then
-                        begin
-                            DeleteFile(nomeArq);
-                            Result := true;
-                        end
-                    else
-                        sintWriteLn('O arquivo ' + nomeArq + ' não existe no diretório atual.');
+                    response := getPipedData;
 
+                    if pos('200', response) <> 0 then
+                        Result := true;
                 end;
        end
 end;
