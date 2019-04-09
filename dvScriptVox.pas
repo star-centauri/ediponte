@@ -387,28 +387,40 @@ begin
 end;
 
 function reomearArq(nomeArq: string): Boolean;
-var novoNome: string;
+var
+    novoNome, novaRota, velhaRota, response: string;
 begin
     Result := false;
 
     if tipoScript = 'DROPBOX' then
         begin
-            if GetCurrentDir <> rotaAtual then
-                SetCurrentDir(rotaAtual);
-
             sintWriteLn('Informe o novo nome: ');
             sintReadLn(novoNome);
 
-            if FileExists(nomeArq) then
+            if _FileExistsScripVox(nomeArq) then
                 begin
-                    if RenameFile(nomeArq, novoNome) then
-                        result := true
+                    if rotaAtual = '/' then
+                        begin
+                            velhaRota := rotaAtual + nomeArq;
+                            novaRota := rotaAtual + novoNome;
+                        end
                     else
-                        sintWrite('Houve um erro ao mudar o nome, tente novamente.');
+                        begin
+                            velhaRota := rotaAtual + '/' + nomeArq;
+                            novaRota := rotaAtual + '/' + novoNome;
+                        end;
+
+                    WritePipeOut(InputPipeWrite, 'RENOMEAR' + #$0a);
+                    WritePipeOut(InputPipeWrite, velhaRota + #$0a);
+                    WritePipeOut(InputPipeWrite, novaRota + #$0a);
+
+                    response := getPipedData;
+
+                    if pos('200', response) <> 0 then
+                        Result := true;
                 end
             else
-                sintWriteLn('Arquivo não existe.');
-
+                sintWriteLn('Arquivo ' + nomeArq + ' não existe.');
         end
 end;
 
