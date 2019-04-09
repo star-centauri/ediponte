@@ -256,36 +256,28 @@ end;
 
 function copiarArq: Boolean;
 var
-    copiarArq, nomeArq: string;
+    rotaLocal, nomeArq, response: string;
     p: integer;
 begin
     Result := false;
 
     if tipoScript = 'DROPBOX' then
         begin
-            if GetCurrentDir <> rotaAtual then
-                SetCurrentDir(rotaAtual);
+            sintWriteLn('Informe o nome do arquivo: ');
+            sintReadLn(nomeArq);
+            sintWriteLn('Informe onde o arquivo se encontra (rota): ');
+            sintReadLn(rotaLocal);
 
-            sintWriteLn('Informe o arquivo que deseja copiar (rota completa): ');
-            sintReadLn(copiarArq);
+            WritePipeOut(InputPipeWrite, 'ENVIAR' + #$0a);
+            WritePipeOut(InputPipeWrite, nomeArq + #$0a);
+            WritePipeOut(InputPipeWrite, rotaLocal + #$0a);
+            WritePipeOut(InputPipeWrite, rotaAtual + #$0a);
 
-            nomeArq := copy(copiarArq, 1, length(copiarArq));
+            response := getPipedData;
 
-            p := Pos('\', nomeArq);
-            while p <> 0 do
-                begin
-                    delete(nomeArq, 1, p);
-                    p := Pos('\', nomeArq);
-                end;
-
-            if CopyFile(PChar(copiarArq), PChar(rotaAtual + '\' + nomeArq), true) then
-                begin
-                    sintWriteLn('Arquivo copiado com sucesso');
-                    Result := true;
-                end
-            else
-                sintWriteLn('Arquivo já existe no diretório atual.');
-        end
+            if pos('200', response) <> 0 then
+                Result := true;
+        end;
 end;
 
 function criarPasta: Boolean;
@@ -447,7 +439,7 @@ begin
     if tipoScript = 'DROPBOX' then
         begin
             listaOpcoes.Add('N - Novo Arquivo');
-            listaOpcoes.Add('C - Copiar arquivo local para o dropbox');
+            listaOpcoes.Add('C - Enviar arquivo para dropbox');
             listaOpcoes.Add('P - Criar pasta');
             listaOpcoes.Add('R - Remover pasta');
             listaOpcoes.Add('T - Terminar');

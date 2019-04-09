@@ -266,6 +266,8 @@ def main():
             copiar_arq()
         elif(opcao == 'VISUALIZAR'):
             visualizar_arq()
+        elif(opcao == 'CRIAR'):
+            criar_pasta()
         elif(opcao == 'LINK'):
             gerar_link_temporario()
         elif(opcao == 'ADICIONAR MEMBRO'):
