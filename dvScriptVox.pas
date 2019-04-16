@@ -57,7 +57,7 @@ var
 begin
     Result := false;
     p := pos('@', caminho);
-    
+
     if tipoScript = 'DROPBOX' then
         begin
             rotaAtual := '/';
@@ -67,6 +67,35 @@ begin
             Result := true;
         end
 end;
+
+procedure propriedadesArq (nomeArq: string);
+var
+response, aux: string;
+p: integer;
+begin
+if tipoScript='DROPBOX' then
+begin
+            WritePipeOut(InputPipeWrite, 'PROPRIEDADE' + #$0a);
+            WritePipeOut(InputPipeWrite, rotaAtual + nomeArq + #$0a);
+response := getPipedData;
+if pos ('500', response) = 0 then
+begin
+p := pos ('|', response);
+delete (response, 1, p);
+p := pos ('|', response);
+aux := copy (response, 1, p-1);
+sintwriteln ('Nome do arquivo: '+aux);
+delete (response, 1, p);
+p := pos ('|', response);
+aux := copy (response, 1, p-1);
+sintwriteln ('Data e hora de modificação: '+aux);
+delete (response, 1, p);
+sintwriteln ('Tamanho do arquivo: '+response);
+end;
+
+end;
+end;
+
 
 {----------------------------------------------------------------------}
 {            Ver o tipo do serviço e envia para o respectivo           }
@@ -419,13 +448,14 @@ end;
 function opcoesArqScripVox(listaOpcoes: TStringList;  var tabLetrasOpcao: string): Boolean;
 begin
     Result := true;
-    tabLetrasOpcao := 'EDRT' + ESC;
+    tabLetrasOpcao := 'EDRPT' + ESC;
 
     if tipoScript = 'DROPBOX' then
         begin
             listaOpcoes.Add('E - Editar Arquivo');
             listaOpcoes.Add('D - Deletar Arquivo');
             listaOpcoes.Add('R - Renomear Arquivo');
+            listaOpcoes.Add('P - Propriedades');
             listaOpcoes.Add('T - Terminar');
         end
     else
@@ -465,8 +495,11 @@ begin
                     Result := false;
                 prosseguir := false;
             end
-        //else
-        //if opcao = 'P' then naoImplem
+        else
+        if opcao = 'P' then
+            begin
+            propriedadesArq (nomeArq);
+            end
         else
         if opcao = 'R' then
             begin
