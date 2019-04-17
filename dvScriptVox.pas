@@ -70,30 +70,32 @@ end;
 
 procedure propriedadesArq (nomeArq: string);
 var
-response, aux: string;
-p: integer;
+    response, aux: string;
+    p: integer;
 begin
-if tipoScript='DROPBOX' then
-begin
+    if tipoScript='DROPBOX' then
+        begin
             WritePipeOut(InputPipeWrite, 'PROPRIEDADE' + #$0a);
             WritePipeOut(InputPipeWrite, rotaAtual + nomeArq + #$0a);
-response := getPipedData;
-if pos ('500', response) = 0 then
-begin
-p := pos ('|', response);
-delete (response, 1, p);
-p := pos ('|', response);
-aux := copy (response, 1, p-1);
-sintwriteln ('Nome do arquivo: '+aux);
-delete (response, 1, p);
-p := pos ('|', response);
-aux := copy (response, 1, p-1);
-sintwriteln ('Data e hora de modificação: '+aux);
-delete (response, 1, p);
-sintwriteln ('Tamanho do arquivo: '+response);
-end;
 
-end;
+            response := getPipedData;
+
+            if pos ('500', response) = 0 then
+                begin
+                    p := pos ('|', response);
+                    delete (response, 1, p);
+                    p := pos ('|', response);
+                    aux := copy (response, 1, p-1);
+                    sintwriteln ('Nome do arquivo: '+aux);
+                    delete (response, 1, p);
+                    p := pos ('|', response);
+                    aux := copy (response, 1, p-1);
+                    sintwriteln ('Data e hora de modificação: '+aux);
+                    delete (response, 1, p);
+                    sintwriteln ('Tamanho do arquivo: '+response);
+                end;
+
+        end;
 end;
 
 

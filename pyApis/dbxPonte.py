@@ -52,14 +52,13 @@ def detalhe_arq():
 
     try:
         res = token.files_get_metadata(path=arquivo, include_media_info=True, include_has_explicit_shared_members=True)
+        print(res)
         #Id, Name, data atualização, tamanho, id group
-        if(type(res) is dropbox.files.FolderMetadata):
-            propriedades = '{0}|{1}'.format(res.id, res.name)
-        else:
-            propriedades = '{0}|{1}|{2}|{3}'.format(res.id, res.name, res.server_modified, res.size)
+        if(type(res) is dropbox.files.FileMetadata):
+            propriedades = 'ID: {0}|Data e hora modificação: {2}|Tamanho: {3}'.format(res.id, res.server_modified, res.size)
 
         if(res.sharing_info is not None):
-            propriedades = '{0}|{1}'.format(propriedades, res.sharing_info.shared_folder_id)
+            propriedades = '{0}|ID compartilhamento: {1}'.format(propriedades, res.sharing_info.shared_folder_id)
 
         print(propriedades)
     except dropbox.exceptions.ApiError as e:
