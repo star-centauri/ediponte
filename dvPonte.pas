@@ -493,7 +493,7 @@ begin
     if ponteConectada.Tipo = 'FTP' then
         Result := downloadFileFTP(nomeArqBaixar, dir)
     else
-        //Result := executaOpcaoScripVox(opcao, prosseguir);
+        Result := downloadFileScriptVox(nomeArqBaixar, dir);
 end;
 
 procedure _reset (var FileHandle: TextFile);

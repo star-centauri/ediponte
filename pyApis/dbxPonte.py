@@ -14,6 +14,9 @@ def type_error(tag):
         print('401: Estávamos esperando uma pasta, mas o caminho indicado refere-se a algo que não é uma pasta.')
     elif(tag.is_restricted_content()):
         print('403: O arquivo não pode ser transferido porque o conteúdo é restrito.')
+    else:
+        print('500: erro ao executar o comando')
+
 
 def access_token():
     global token
@@ -91,11 +94,11 @@ def baixar_arq():
     rotaArq = input('arquivo: ')
 
     try:
-        #file_path = os.path.join(rotaLocal, rotaArq)
         token.files_download_to_file(rotaLocal, rotaArq)
         print(200)
-    except Exception as err:
-        print("Failed to download %s\n%s" % (rotaArq, err))
+    except dropbox.exceptions.ApiError as e:
+        if(e.error.is_path()):
+            type_error(e.error.get_path())
 
 def baixar_pasta_zip():
     global token

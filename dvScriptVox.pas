@@ -28,6 +28,7 @@ function listarArqScript(out listar: TStringList): Boolean;
 
 { funções e procedures para manipulação de arquivos }
 function opcoesArqScripVox(listaOpcoes: TStringList;  var tabLetrasOpcao: string): Boolean;
+function downloadFileScriptVox(nomeArqBaixar, dir: string): Boolean;
 function _FileExistsScripVox(fileName: string): Boolean;
 function _findFirstScripVox(FileMask: string; Attributes: Integer; var SearchResult: TSearchRec; listar: TStringList): integer;
 function _findNextScripVox(var SearchResults: TSearchRec; listar: TStringList): integer;
@@ -68,6 +69,10 @@ begin
         end
 end;
 
+{----------------------------------------------------------------------}
+{             Captura propriedades de um arquivo ou pasta              }
+{----------------------------------------------------------------------}
+
 procedure propriedadesArq (nomeArq: string);
 var
     response, aux: string;
@@ -80,10 +85,11 @@ begin
 
             response := getPipedData;
 
-            if (pos ('404', response) = 0) or
-               (pos ('405', response) = 0) or
-               (pos ('401', response) = 0) or
-               (pos ('403', response) = 0) then
+            if (pos('404', response) = 0) or
+               (pos('405', response) = 0) or
+               (pos('401', response) = 0) or
+               (pos('403', response) = 0) or
+               (pos('500', response) = 0) then
                 begin
                     while response <> #$D#$A do
                         begin
@@ -97,6 +103,40 @@ begin
         end;
 end;
 
+function downloadFileScriptVox(nomeArqBaixar, dir: string): Boolean;
+var
+    response, rotaRemota: string;
+begin
+    Result := false;
+    
+    if dir = '' then
+        dir := GetCurrentDir;
+
+    if FileExists(dir + '\' + nomeArqBaixar) then
+        begin
+            sintWriteLn('Arquivo já existe no diretório ' + dir);
+            sintWrite('Deseja substituir? ');
+
+            if popupMenuPorLetra('SN') = 'S' then
+                DeleteFile(dir + '\' + nomeArqBaixar)
+            else
+                exit;
+        end;
+
+    if rotaAtual = '/' then
+        rotaRemota := rotaAtual + nomeArqBaixar
+    else
+        rotaRemota := rotaAtual + '/' + nomeArqBaixar;
+
+    WritePipeOut(InputPipeWrite, 'BAIXAR' + #$0a);
+    WritePipeOut(InputPipeWrite, dir + #$0a);
+    WritePipeOut(InputPipeWrite, rotaRemota + #$0a);
+    response := getPipedData;
+
+    if pos('200', response) <> 0 then
+        Result := true;
+
+end;
 
 {----------------------------------------------------------------------}
 {            Ver o tipo do serviço e envia para o respectivo           }
@@ -408,7 +448,7 @@ begin
        end
 end;
 
-function reomearArq(nomeArq: string): Boolean;
+function renomearArq(nomeArq: string): Boolean;
 var
     novoNome, novaRota, velhaRota, response: string;
 begin
@@ -449,11 +489,12 @@ end;
 function opcoesArqScripVox(listaOpcoes: TStringList;  var tabLetrasOpcao: string): Boolean;
 begin
     Result := true;
-    tabLetrasOpcao := 'EDRPT' + ESC;
+    tabLetrasOpcao := 'EBDRPT' + ESC;
 
     if tipoScript = 'DROPBOX' then
         begin
             listaOpcoes.Add('E - Editar Arquivo');
+            listaOpcoes.Add('B - Baixar Arquivo');
             listaOpcoes.Add('D - Deletar Arquivo');
             listaOpcoes.Add('R - Renomear Arquivo');
             listaOpcoes.Add('P - Propriedades');
@@ -490,6 +531,13 @@ begin
                     prosseguir := false;
            end
         else
+        if opcao = 'B' then
+            begin
+                if not baixarArq(nomeArq) then
+                    Result := false;
+                prosseguir := false;
+            end
+        else
         if opcao = 'D' then
             begin
                 if not deletaArq(nomeArq) then
@@ -500,13 +548,12 @@ begin
         if opcao = 'P' then
             begin
             propriedadesArq (nomeArq);
-            Result := false;
             prosseguir := false;
             end
         else
         if opcao = 'R' then
             begin
-                if not reomearArq(nomeArq) then
+                if not renomearArq(nomeArq) then
                     Result := false;
                 prosseguir := false;
             end
