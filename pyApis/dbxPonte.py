@@ -1,4 +1,5 @@
-import dropbox, sys, os
+import dropbox, sys, os, time
+from hurry.filesize import size, verbose
 
 token = None
 
@@ -52,13 +53,11 @@ def detalhe_arq():
 
     try:
         res = token.files_get_metadata(path=arquivo, include_media_info=True, include_has_explicit_shared_members=True)
-        print(res)
-        #Id, Name, data atualização, tamanho, id group
         if(type(res) is dropbox.files.FileMetadata):
-            propriedades = 'ID: {0}|Data e hora modificação: {2}|Tamanho: {3}'.format(res.id, res.server_modified, res.size)
+            propriedades = 'Localização no Dropbox: {0}|Data e hora modificação: {1}|Tamanho: {2}|'.format(res.path_lower, res.server_modified.strftime("%m/%d/%Y %H:%M:%S"), size(res.size, system=verbose))
 
         if(res.sharing_info is not None):
-            propriedades = '{0}|ID compartilhamento: {1}'.format(propriedades, res.sharing_info.shared_folder_id)
+            propriedades = '{0}ID compartilhamento: {1}|'.format(propriedades, res.sharing_info.shared_folder_id)
 
         print(propriedades)
     except dropbox.exceptions.ApiError as e:

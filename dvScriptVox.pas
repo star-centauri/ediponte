@@ -80,19 +80,18 @@ begin
 
             response := getPipedData;
 
-            if pos ('500', response) = 0 then
+            if (pos ('404', response) = 0) or
+               (pos ('405', response) = 0) or
+               (pos ('401', response) = 0) or
+               (pos ('403', response) = 0) then
                 begin
-                    p := pos ('|', response);
-                    delete (response, 1, p);
-                    p := pos ('|', response);
-                    aux := copy (response, 1, p-1);
-                    sintwriteln ('Nome do arquivo: '+aux);
-                    delete (response, 1, p);
-                    p := pos ('|', response);
-                    aux := copy (response, 1, p-1);
-                    sintwriteln ('Data e hora de modificação: '+aux);
-                    delete (response, 1, p);
-                    sintwriteln ('Tamanho do arquivo: '+response);
+                    while response <> #$D#$A do
+                        begin
+                            p := pos('|', response);
+                            aux := copy (response, 1, p-1);
+                            sintWriteLn(aux);
+                            delete (response, 1, p);
+                        end;
                 end;
 
         end;
@@ -501,6 +500,8 @@ begin
         if opcao = 'P' then
             begin
             propriedadesArq (nomeArq);
+            Result := false;
+            prosseguir := false;
             end
         else
         if opcao = 'R' then
