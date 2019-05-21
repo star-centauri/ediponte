@@ -128,6 +128,7 @@ begin
     else
         rotaRemota := rotaAtual + '/' + nomeArqBaixar;
 
+    dir := dir + '\' + nomeArqBaixar;    
     WritePipeOut(InputPipeWrite, 'BAIXAR' + #$0a);
     WritePipeOut(InputPipeWrite, dir + #$0a);
     WritePipeOut(InputPipeWrite, rotaRemota + #$0a);
