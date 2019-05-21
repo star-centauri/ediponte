@@ -38,7 +38,7 @@ procedure _closeFileScripVox(var FileHandle: TextFile);
 procedure _resetScripVox(var FileHandle: TextFile);
 
 { funções e procedures para manipulação de pastas }
-function _directoryexistScripVox: Boolean;
+function _directoryexistScripVox(nomeDir: string): Boolean;
 procedure _ChDirScripVox(Dir: string);
 procedure opcoesDirScriptVox(out listaOpcoes: TStringList; var tabLetrasOpcao: string);
 function voltarDirScripVox: Boolean;
@@ -144,12 +144,22 @@ end;
 {            script para verificar se existe o diretório               }
 {----------------------------------------------------------------------}
 
-function _directoryexistScripVox: Boolean;
+function _directoryexistScripVox(nomeDir: string): Boolean;
+var
+    rotaDropbox: string;
 begin
+    if nomeDir = 'none' then
+        rotaDropbox := rotaAtual
+    else
+        if rotaAtual = '/' then
+            rotaDropbox := rotaAtual + nomeDir
+        else
+            rotaDropbox := rotaAtual + '/' + nomeDir;
+
     if tipoScript = 'DROPBOX' then
         begin
             WritePipeOut(InputPipeWrite, 'PROPRIEDADE' + #$0a);
-            WritePipeOut(InputPipeWrite, rotaAtual + #$0a);
+            WritePipeOut(InputPipeWrite, rotaDropbox + #$0a);
         end;
 end;
 
@@ -353,7 +363,7 @@ end;
 
 function criarPasta: Boolean;
 var
-    nomeDir: string;
+    nomeDir, response: string;
 begin
     Result := false;
 
@@ -362,15 +372,21 @@ begin
             sintWriteln('Informe o nome da nova pasta: ');
             sintReadLn(nomeDir);
 
-            if rotaAtual[length(rotaAtual)] <> '\' then
-                rotaAtual := rotaAtual + '\';
+            if rotaAtual = '/' then
+                nomeDir := rotaAtual + nomeDir
+            else
+                nomeDir := rotaAtual + '/' + nomeDir;
 
-            if DirectoryExists(rotaAtual + nomeDir) then
+            if _directoryexistScripVox(nomeDir) then
                 sintWriteLn('O diretório com o nome ' + nomeDir + ' já existe')
             else
                 begin
-                    ForceDirectories(rotaAtual + nomeDir + '\');
-                    Result := true;
+                    WritePipeOut(InputPipeWrite, 'CRIAR' + #$0a);
+                    WritePipeOut(InputPipeWrite, nomeDir + #$0a);
+                    response := getPipedData;
+
+                    if pos('500', response) = 0 then
+                        Result := true;
                 end;
         end
 end;
@@ -507,11 +523,10 @@ end;
 
 procedure opcoesDirScriptVox(out listaOpcoes: TStringList; var tabLetrasOpcao: string);
 begin
-    tabLetrasOpcao := 'NCPRT' + ESC;
+    tabLetrasOpcao := 'CPRT' + ESC;
 
     if tipoScript = 'DROPBOX' then
         begin
-            listaOpcoes.Add('N - Novo Arquivo');
             listaOpcoes.Add('C - Enviar arquivo para dropbox');
             listaOpcoes.Add('P - Criar pasta');
             listaOpcoes.Add('R - Remover pasta');
@@ -570,13 +585,6 @@ begin
             ERRO := ERRO_OPCINV
     else
     if tipoDado = Diretorio then
-        if opcao = 'N' then
-            begin
-                if not criarArq then
-                    Result := false;
-                prosseguir := false;
-            end
-        else
         if opcao = 'C' then
             begin
                 if not copiarArq then

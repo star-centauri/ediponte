@@ -374,7 +374,7 @@ begin
             if ponteConectada.Tipo = 'FTP' then
                 Result := _directoryExistFTP
             else
-                Result := _directoryexistScripVox;
+                Result := _directoryexistScripVox('none');
         end
     else
         Result := DirectoryExists(DirectoryName);
