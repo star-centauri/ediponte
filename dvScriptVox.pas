@@ -146,8 +146,10 @@ end;
 
 function _directoryexistScripVox(nomeDir: string): Boolean;
 var
-    rotaDropbox: string;
+    rotaDropbox, response: string;
 begin
+    Result := false;
+
     if nomeDir = 'none' then
         rotaDropbox := rotaAtual
     else
@@ -160,6 +162,14 @@ begin
         begin
             WritePipeOut(InputPipeWrite, 'PROPRIEDADE' + #$0a);
             WritePipeOut(InputPipeWrite, rotaDropbox + #$0a);
+            response := getPipedData;
+
+            if (pos('404', response) = 0) or
+               (pos('405', response) = 0) or
+               (pos('401', response) = 0) or
+               (pos('403', response) = 0) or
+               (pos('500', response) = 0) then
+               Result := true;
         end;
 end;
 
@@ -393,7 +403,7 @@ end;
 
 function removerPasta: Boolean;
 var
-   dirDeletar: string;
+   dirDeletar, response: string;
    c: char;
    i: integer;
    sr: TSearchRec;
@@ -402,33 +412,28 @@ begin
 
     if tipoScript = 'DROPBOX' then
         begin
-            if GetCurrentDir <> rotaAtual then
-                SetCurrentDir(rotaAtual);
-
             sintWriteLn('Informe o nome do diretório que será removido: ');
             sintReadLn(dirDeletar);
 
-            if DirectoryExists(dirDeletar) then
+            if _directoryexistScripVox(dirDeletar) then
                 begin
+                    sintWrite('Deseja realmente remover o diretório?');
+                    c := popupMenuPorLetra('SN');
 
-                    if FindFirst(rotaAtual + dirDeletar + '\*.*', faAnyFile, SR) = 0 then
+                    if UpperCase(c) = 'S' then
                         begin
-                            repeat
-                                if ((sr.Name <> '.') and (sr.Name <> '..')) then
-                                   begin
-                                       sintWriteLn('O diretório possui arquivos e pastas.');
-                                       sintWriteLn('Remova-os antes de excluir diretório desejado.');
-                                       exit;
-                                   end;
-                            until FindNext(SR) <> 0;
+                            if rotaAtual = '/' then
+                                dirDeletar := rotaAtual + dirDeletar
+                            else
+                                dirDeletar := rotaAtual + '/' + dirDeletar;
 
-                            FindClose(SR);
+                            WritePipeOut(InputPipeWrite, 'EXCLUIR' + #$0a);
+                            WritePipeOut(InputPipeWrite, dirDeletar + #$0a);
+                            response := getPipedData;
+
+                            if pos('200', response) <> 0 then
+                                Result := true;
                         end;
-
-                    RemoveDir(dirDeletar);
-                    SetCurrentDir(rotaAtual);
-                    Result := true;
-                    sintWriteLn('Diretório removido com sucesso');
                 end
             else
                 sintWriteLn('Diretório ' + dirDeletar + ' não existe.');
