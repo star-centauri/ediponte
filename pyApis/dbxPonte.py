@@ -21,17 +21,20 @@ def type_error(tag):
 def access_token():
     global token
     token = dropbox.Dropbox('6m97rPtmSgAAAAAAAAAANkC4q_VO1s9bI2niEY0GDNWeTg-N3kKd_iKFypsxUuql')
+    
     try:
         token.users_get_current_account()
         print('200: success')
-    except dropbox.exceptions.AuthError as err:
-        raise StandardError("500: error access")
+    except Exception as err:
+        print('500: {}'.format(err))
 
 def listar_arq():
     global token
     rota = input('rota: ').lower()
     if(rota == 'raiz'):
         rota = ''
+
+    listItems = []
 
     try:
         for entry in token.files_list_folder(rota).entries:
@@ -45,14 +48,16 @@ def listar_arq():
             if(entry.sharing_info is not None):
                 name = '{} (compartilhado)'.format(name)
 
-            print(name)
+            listItems.append(name)
+        
+        print("{}|".format("|".join(listItems)))
     except dropbox.exceptions.ApiError as error:
         print('500: {}'.format(error.user_message_text))
 
 def detalhe_arq():
     global token
     arquivo = input('Arquivo: ')
-    propriedades = "";
+    propriedades = ""
 
     try:
         res = token.files_get_metadata(path=arquivo, include_media_info=True, include_has_explicit_shared_members=True)
@@ -145,7 +150,7 @@ def criar_pasta():
         token.files_create_folder(nomePasta)
         print(200)
     except Exception as err:
-        print("Failed to download %s\n%s" % (rotaPasta, err))
+        print("500: ".format(err))
 
 def remover_contato():
     global token
@@ -233,10 +238,10 @@ def espaco_conta():
         token.users_get_space_usage()
         print(200)
     except Exception as err:
-        print('500: {}'.format(err.user_message_text))
+        print('500: {}'.format(err))
 
 def main():
-    processando = True;
+    processando = True
 
     while(processando):
         opcao = input().upper()

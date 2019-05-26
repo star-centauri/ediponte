@@ -219,16 +219,20 @@ begin
 
     response := getPipedData;
 
-    if response <> '' then
+    if pos('500', response) <> 0 then
         begin
-            listar.Add('..');
-            while response <> '' do
-                begin
-                    p := Pos(''#$D#$A'', response);
-                    item := copy(response, 1, p-1);
-                    listar.Add(item);
-                    delete(response, 1, p+1);
-                end;
+            sintWriteLn('Não foi possível acessar esse diretório, tente novamente mais tarde.');
+            Result := false;
+            exit;
+        end;
+
+    listar.Add('..');
+    while response <> ''#$D#$A'' do
+        begin
+            p := Pos('|', response);
+            item := copy(response, 1, p-1);
+            listar.Add(item);
+            delete(response, 1, p);
         end;
 end;
 
@@ -701,7 +705,7 @@ begin
                     exit;
                 end;
 
-            WritePipeOut(InputPipeWrite, 'login' + #$0a);
+            WritePipeOut(InputPipeWrite, 'LOGIN' + #$0a);
             response := getPipedData;
 
             if Pos('200', response) = 0 then
