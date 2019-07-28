@@ -1,5 +1,7 @@
 import dropbox, sys, os, time
+from dropbox import DropboxOAuth2FlowNoRedirect
 from hurry.filesize import size, verbose
+import webbrowser
 
 token = None
 
@@ -17,6 +19,21 @@ def type_error(tag):
     else:
         print('500: erro ao executar o comando')
 
+def access_Oauth():
+    global token
+
+    auth_flow = DropboxOAuth2FlowNoRedirect('b84tcu1f1ctkwpw', '2rye81pkwjfuf85')
+    authorize_url = auth_flow.start()
+    webbrowser.open(authorize_url, new=2)
+    auth_code = input("202: ").strip()
+    
+    try:
+        oauth_result = auth_flow.finish(auth_code)
+        print("200:success")
+    except Exception as err:
+        print('500: {}'.format(err))
+
+    token = dropbox.Dropbox(oauth_result.access_token)
 
 def access_token():
     global token
@@ -150,7 +167,7 @@ def criar_pasta():
         token.files_create_folder(nomePasta)
         print(200)
     except Exception as err:
-        print("500: ".format(err))
+        print("500: {}".format(err))
 
 def remover_contato():
     global token
@@ -248,6 +265,8 @@ def main():
 
         if(opcao == 'LOGIN'):
             access_token()
+        elif(opcao == 'AUTH'):
+            access_Oauth()
         elif(opcao == 'LISTAR'):
             listar_arq()
         elif(opcao == 'ENVIAR'):

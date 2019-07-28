@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['dbxPonte.py'],
-             pathex=['C:\\Users\\Bruna\\Desktop\\PastaEmGeral\\Projetos\\Fazendo\\ediponteV2\\pyApis'],
+             pathex=['E:\\PastaEmGeral\\Projetos\\Fazendo\\ediponteV2\\pyApis'],
              binaries=[],
              datas=[],
              hiddenimports=[],
