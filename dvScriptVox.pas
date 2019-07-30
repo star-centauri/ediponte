@@ -686,7 +686,7 @@ end;
 
 function inicializaScriptVox(ponte: TPonte; nomePonte: string): Boolean;
 var
-    response: string;
+    response, chave: string;
 begin
     Result := true;
 
@@ -705,14 +705,23 @@ begin
                     exit;
                 end;
 
-            WritePipeOut(InputPipeWrite, 'LOGIN' + #$0a);
+            WritePipeOut(InputPipeWrite, 'AUTH' + #$0a);
             response := getPipedData;
 
-            if Pos('200', response) = 0 then
+            if Pos('202', response) <> 0 then
                 begin
-                    progStop;
-                    Exit;
+                    sintWriteLn('Informe a chave de autenticação: ');
+                    sintReadLn(chave);
+                    WritePipeOut(InputPipeWrite, chave + #$0a);
+                    response := getPipedData;
+
+                    if Pos('200', response) = 0 then
+                        begin
+                            progStop;
+                            Exit;
+                        end;
                 end;
+                
             sintetiza('ponte '+ ponte.Tipo + ' conectada.');
         end
     else
