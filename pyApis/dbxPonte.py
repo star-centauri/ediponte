@@ -1,6 +1,7 @@
-import dropbox, sys, os, time
 from dropbox import DropboxOAuth2FlowNoRedirect
 from hurry.filesize import size, verbose
+from selenium import webdriver
+import dropbox, sys, os, time
 import webbrowser
 
 token = None
@@ -34,6 +35,19 @@ def access_Oauth():
         print('500: {}'.format(err))
 
     token = dropbox.Dropbox(oauth_result.access_token)
+
+def access_OauthAutomatic():
+    driver = webdriver.Ie('IEDriverServer')
+    auth_flow = DropboxOAuth2FlowNoRedirect('b84tcu1f1ctkwpw', '2rye81pkwjfuf85')
+    authorize_url = auth_flow.start()
+    driver.get(authorize_url)
+
+    auth_login = input('Informe login: ')
+    auth_senha = input('Informe senha: ')
+
+    driver.find_element_by_name('login_email').send_keys(auth_login)
+    driver.find_element_by_name('login_password').send_keys(auth_senha)
+    driver.find_element_by_class_name('login-button').click()
 
 def access_token():
     global token
@@ -267,6 +281,8 @@ def main():
             access_token()
         elif(opcao == 'AUTH'):
             access_Oauth()
+        elif(opcao == 'AUTH2'):
+            access_OauthAutomatic()
         elif(opcao == 'LISTAR'):
             listar_arq()
         elif(opcao == 'ENVIAR'):
