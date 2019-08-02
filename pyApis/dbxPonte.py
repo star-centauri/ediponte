@@ -2,6 +2,7 @@ from dropbox import DropboxOAuth2FlowNoRedirect
 from hurry.filesize import size, verbose
 from selenium import webdriver
 import dropbox, sys, os, time
+import time as time
 import webbrowser
 
 token = None
@@ -30,13 +31,14 @@ def access_Oauth():
     
     try:
         oauth_result = auth_flow.finish(auth_code)
+        token = dropbox.Dropbox(oauth_result.access_token)
         print("200:success")
     except Exception as err:
         print('500: {}'.format(err))
 
-    token = dropbox.Dropbox(oauth_result.access_token)
-
 def access_OauthAutomatic():
+    global token
+
     driver = webdriver.Ie('IEDriverServer')
     auth_flow = DropboxOAuth2FlowNoRedirect('b84tcu1f1ctkwpw', '2rye81pkwjfuf85')
     authorize_url = auth_flow.start()
@@ -45,9 +47,26 @@ def access_OauthAutomatic():
     auth_login = input('Informe login: ')
     auth_senha = input('Informe senha: ')
 
-    driver.find_element_by_name('login_email').send_keys(auth_login)
-    driver.find_element_by_name('login_password').send_keys(auth_senha)
+    driver.find_element_by_xpath("//input[@name='login_email']").send_keys(auth_login)
+    driver.find_element_by_xpath("//input[@name='login_password']").send_keys(auth_senha)
     driver.find_element_by_class_name('login-button').click()
+
+    time.sleep(20)
+    driver.find_element_by_id('warning-button-continue').click()
+
+    time.sleep(10)
+    driver.find_element_by_xpath("//button[@name='allow_access']").click()
+
+    time.sleep(5)
+    auth_code = driver.find_element_by_xpath("//input[@class='auth-box']").get_attribute('data-token')
+    
+    try:
+        oauth_result = auth_flow.finish(auth_code)
+        token = dropbox.Dropbox(oauth_result.access_token)
+        driver.quit()
+        print("200:success")
+    except Exception as err:
+        print('500: {}'.format(err))
 
 def access_token():
     global token
