@@ -226,6 +226,20 @@ begin
 end;
 
 {----------------------------------------------------------------------}
+{                        Configuracao das pontes                       }
+{----------------------------------------------------------------------}
+
+procedure configuracao;
+var ehAutomatico: Boolean;
+begin
+    formCria;
+    formCampoBool('', 'Autenticação Automática?', ehAutomatico);
+    formEdita(true);
+    
+    autenticacaoAutomatico := ehAutomatico;
+end;
+
+{----------------------------------------------------------------------}
 {        processo de escolha da ponte e validação da existencia        }
 {                       no arquivo pontes.ini                          }
 {----------------------------------------------------------------------}
@@ -247,6 +261,12 @@ begin
         begin
             mensagem ('EPDESIST', 1); {Desistiu}
             exit;
+        end;
+
+    if atalho = F9 then
+        begin
+            configuracao;
+            Result := True;
         end;
 
     if nomePonte <> '' then

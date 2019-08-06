@@ -45,20 +45,20 @@ procedure inicializa;
 
     procedure DesenharTitulo;
     begin
-    textColor (WHITE);
-    TextBackground(Blue);
+        textColor (WHITE);
+        TextBackground(Blue);
 
-    writeln (' ______   _____    __   ______   _____   _    _   ______   ______ ');
-    writeln ('|   ___| |  _  |  |  | |   _  | |  _  | |  |_| | |_    _| |   ___|');
-    writeln ('|  |___  | | |  | |  | |  |_| | | | | | |      |   |  |   |  |___ ');
-    writeln ('|   ___| | |_|  | |  | |   ___| | |_| | |  _   |   |  |   |   ___|');
-    writeln ('|  |___  |      | |  | |  |     |     | | | |  |   |  |   |  |___ ');
-    writeln ('|______| |_____|  |__| |__|     |_____| |_| |__|   |__|   |______|');
+        writeln (' ______   _____    __   ______   _____   _    _   ______   ______ ');
+        writeln ('|   ___| |  _  |  |  | |   _  | |  _  | |  |_| | |_    _| |   ___|');
+        writeln ('|  |___  | | |  | |  | |  |_| | | | | | |      |   |  |   |  |___ ');
+        writeln ('|   ___| | |_|  | |  | |   ___| | |_| | |  _   |   |  |   |   ___|');
+        writeln ('|  |___  |      | |  | |  |     |     | | | |  |   |  |   |  |___ ');
+        writeln ('|______| |_____|  |__| |__|     |_____| |_| |__|   |__|   |______|');
 
-    mensagem('EPTITULO', 0); {'EDIPONTE'}
-    sintWriteln(VERSAO);
-    textBackground(BLACK);
-    writeln;
+        mensagem('EPTITULO', 0); {'EDIPONTE'}
+        sintWriteln(VERSAO);
+        textBackground(BLACK);
+        writeln;
     end;
 
 begin
@@ -68,6 +68,7 @@ begin
     DesenharTitulo;
 
     nomePonte := '';
+    autenticacaoAutomatico := false;
 end;
 
 begin

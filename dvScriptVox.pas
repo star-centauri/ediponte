@@ -685,8 +685,56 @@ begin
 end;
 
 function inicializaScriptVox(ponte: TPonte; nomePonte: string): Boolean;
+    procedure autenticarManualmente;
+    var response, chave: string;
+    begin
+        WritePipeOut(InputPipeWrite, 'AUTH' + #$0a);
+        response := getPipedData;
+
+        if Pos('202', response) <> 0 then
+            begin
+                sintWriteLn('Informe a chave de autenticação: ');
+                sintReadLn(chave);
+                WritePipeOut(InputPipeWrite, chave + #$0a);
+                response := getPipedData;
+
+                if Pos('200', response) = 0 then
+                    begin
+                        progStop;
+                        Exit;
+                    end;
+            end;
+    end;
+
+    procedure autenticarAutomaticamente;
+    var response, senha: string;
+    begin
+        WritePipeOut(InputPipeWrite, 'AUTH2' + #$0a);
+        response := getPipedData;
+
+        if Pos('login', response) <> 0 then
+            begin
+                response := WritePipeOut(InputPipeWrite, ponteConectadaScript.Conta + #$0a);
+
+                if Pos('senha', response) <> 0 then
+                    begin
+                        senha := aplicaSenha(ponteConectadaScript.Senha);
+                        WritePipeOut(InputPipeWrite, senha + #$0a);
+                        sintWriteLn('Estamos fazendo a autenticação manual do dropbox');
+                        sintWriteLn('Por favor, não mexer no teclado e mouse.');
+
+                        response := getPipedData;
+                        if Pos('200', response) = 0 then
+                            begin
+                                progStop;
+                                Exit;
+                            end;
+                    end;
+            end;
+    end;
+
 var
-    response, chave: string;
+    response: string;
 begin
     Result := true;
 
@@ -705,22 +753,11 @@ begin
                     exit;
                 end;
 
-            WritePipeOut(InputPipeWrite, 'AUTH' + #$0a);
-            response := getPipedData;
+            if autenticacaoAutomatico then
+                autenticarAutomaticamente
+            else
+                autenticarManualmente;
 
-            if Pos('202', response) <> 0 then
-                begin
-                    sintWriteLn('Informe a chave de autenticação: ');
-                    sintReadLn(chave);
-                    WritePipeOut(InputPipeWrite, chave + #$0a);
-                    response := getPipedData;
-
-                    if Pos('200', response) = 0 then
-                        begin
-                            progStop;
-                            Exit;
-                        end;
-                end;
                 
             sintetiza('ponte '+ ponte.Tipo + ' conectada.');
         end

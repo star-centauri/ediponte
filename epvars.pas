@@ -32,6 +32,7 @@ var
     ERRO: string;             { Variavel para captura tipo de erro na conexão }
     ponteiro_prox: integer;
     atalhoRapido: boolean; { Variavél para informa se usuário digitou atalho direto a ponte }
+    autenticacaoAutomatico: boolean;
 
 function pegaReal (s: string): real;
 function selPreferidos: string;
