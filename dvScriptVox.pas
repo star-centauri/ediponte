@@ -151,12 +151,7 @@ begin
     Result := false;
 
     if nomeDir = 'none' then
-        rotaDropbox := rotaAtual
-    else
-        if rotaAtual = '/' then
-            rotaDropbox := rotaAtual + nomeDir
-        else
-            rotaDropbox := rotaAtual + '/' + nomeDir;
+        rotaDropbox := rotaAtual;
 
     if tipoScript = 'DROPBOX' then
         begin

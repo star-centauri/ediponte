@@ -68,7 +68,7 @@ begin
     DesenharTitulo;
 
     nomePonte := '';
-    autenticacaoAutomatico := false;
+    autenticacaoAutomatico := True;
 end;
 
 begin
